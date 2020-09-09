@@ -13,7 +13,7 @@ Pythonic application for automatically launching virtual networks using VirtualB
 $ python3 topo.py
 ```
 
-### Display host configs 
+### Create Default Network Topology
 ```python
 t = Topology()
 t.start() 
