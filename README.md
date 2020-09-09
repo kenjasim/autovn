@@ -2,9 +2,9 @@
 
 Pythonic application for automatically launching virtual networks using VirtualBox. 
 
-Markup : * Operates on a models pattern, Networks and Hosts are initialisable from a single command. 
-         * Overide the Topology class to create custom topologies. 
-         * Automatically spawns SSH sessions in new Mac terminal windows. 
+* Operates on a models pattern, Networks and Hosts are initialisable from a single command. 
+* Overide the Topology class to create custom topologies. 
+* Automatically spawns SSH sessions in new Mac terminal windows. 
 
 ## Use case
 
