@@ -2,9 +2,9 @@
 
 Pythonic application for automatically launching virtual networks using VirtualBox. 
 
-Markup : * Operates on a models pattern, Networks and Hosts are initialisable from a single command. 
-         * Overide the Topology class to create custom topologies. 
-         * Automatically spawns SSH sessions in new Mac terminal windows. 
+* Operates on a models pattern, Networks and Hosts are initialisable from a single command. 
+* Overide the Topology class to create custom topologies. 
+* Automatically spawns SSH sessions in new Mac terminal windows. 
 
 ## Use case
 
@@ -13,7 +13,7 @@ Markup : * Operates on a models pattern, Networks and Hosts are initialisable fr
 $ python3 topo.py
 ```
 
-### Display host configs 
+### Create Default Network Topology
 ```python
 t = Topology()
 t.start() 
@@ -22,6 +22,8 @@ t.start()
 ```python 
 t.show_hosts() 
 ```
+
+```bash
 ╒══════════╤═══════════╤═════════════════╤════════╤══════════╕
 │ vmname   │ VMState   │ ostype          │   cpus │   memory │
 ╞══════════╪═══════════╪═════════════════╪════════╪══════════╡
@@ -31,11 +33,14 @@ t.show_hosts()
 ├──────────┼───────────┼─────────────────┼────────┼──────────┤
 │ slave2   │ running   │ Ubuntu (64-bit) │      1 │     2048 │
 ╘══════════╧═══════════╧═════════════════╧════════╧══════════╛
+```
 
 ### Display network configs 
 ```python 
 t.show_networks()
 ```
+
+```bash
 ╒══════════╤═══════╤═══════════╤═══════════════════╤═══════════╕
 │ vmname   │   nic │ netname   │ mac               │ ip        │
 ╞══════════╪═══════╪═══════════╪═══════════════════╪═══════════╡
@@ -51,6 +56,7 @@ t.show_networks()
 ├──────────┼───────┼───────────┼───────────────────┼───────────┤
 │ slave2   │     2 │ vboxnet0  │ 08:00:27:4e:15:78 │ 20.0.0.32 │
 ╘══════════╧═══════╧═══════════╧═══════════════════╧═══════════╛
+``` 
 
 ### Spawn SSH shells (Mac terminal) automatically 
 ```python
