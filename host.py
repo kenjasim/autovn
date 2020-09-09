@@ -18,8 +18,8 @@ class Host(object):
         """
         self.vmname = vmname
         self.image = image 
-        self.username = 'dev'
-        self.password = 'ved'
+        self.username = "dev"
+        self.password = "ved"
         # Check if image template or vmname already exists 
         if self.check_exists(image):
             raise Exception("[!] Template image already exists, unable to duplicate")
@@ -151,14 +151,14 @@ class Host(object):
     
     def restart(self):
         """
-        Power off and on again the virtual machine
+        Power off and on again the virtual machine.
         """
         self.stop() 
         self.start() 
 
-    def delete(self):
+    def destroy(self):
         """
-        Permanently delete the virtual machine and all it's files 
+        Permanently delete the virtual machine and all it's files.
         """
         cmd = 'VBoxManage unregistervm --delete ' + self.vmname
         subprocess.getoutput(cmd)
@@ -202,11 +202,11 @@ if __name__ == '__main__':
     h.assign_internet(1) 
     h.assign_network(2, "vboxnet0")
     h.start() 
-    time.sleep(30) 
+    time.sleep(20) 
     print(h)
     h.ssh() 
-    # h.stop() 
-    # h.delete() 
+    h.stop() 
+    h.destroy() 
 
 ################################################################################
 # Resources

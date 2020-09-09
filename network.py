@@ -2,6 +2,7 @@ from pathlib import Path
 import xml.etree.ElementTree as ET
 import subprocess
 import re 
+import time
 
 
 class Network(object): 
@@ -21,7 +22,7 @@ class Network(object):
         self.dhcplower = dhcplower
         self.dhcpupper = dhcpupper
         # Call VirtualBox to create network 
-        self.create_network() 
+        self.create() 
 
     @classmethod
     def check_exists(self, netname):
@@ -51,6 +52,12 @@ class Network(object):
                     leases[macaddr] = lease.find('Address').attrib['value']
         return leases
     
+    def get_name(self): 
+        """
+        Return the name of the network as assigned by VirtualBox. 
+        """
+        return self.netname
+    
     def next_name(self): 
         """
         Identify next host-only network interface name to be assigned by VBox 
@@ -61,13 +68,15 @@ class Network(object):
         netnames = r.splitlines() 
         netids = [int(re.match('.*?([0-9]+)$', name).group(1)) for name in netnames]
         netids.sort()
-        bigid = netids[-1] # largest id assigned
+        bigid = 0
+        if len(netids) != 0:
+            bigid = netids[-1] # largest id assigned
         for n in range(0, bigid + 2): # search for smallest unused id, up to 1 greater than the largest  
             if n not in netids:
                 return "vboxnet" + str(n) 
         raise Exception("[!] Failed to find a free network name.")
 
-    def create_network(self):
+    def create(self):
         """
         Create host-only network interface. 
         Note, VirtualBox increments host-only names, e.g. "vboxnetN"
@@ -93,8 +102,16 @@ class Network(object):
         # Enable the server
         cmd = 'VBoxManage dhcpserver modify --ifname '+ self.netname +' --enable'
         subprocess.getoutput(cmd)
+    
+    def reset_dhcp(self):
+        # Enable the server
+        cmd = 'VBoxManage dhcpserver modify --ifname '+ self.netname +' --disable'
+        subprocess.getoutput(cmd)
+        time.sleep(20)
+        cmd = 'VBoxManage dhcpserver modify --ifname '+ self.netname +' --enable'
+        subprocess.getoutput(cmd)
 
-    def destroy_network(self):
+    def destroy(self):
         """
         Permanently destroy host-only network. 
         """
