@@ -1,4 +1,5 @@
 from pathlib import Path
+import xml.etree.ElementTree as ET
 import subprocess
 import re 
 
@@ -9,10 +10,11 @@ class Network(object):
         """
         Initialises VirtualBox host-only network interface 
         Options:
+            label: user defined label to identify network interface
             hostname: name of host only interface
             hostaddr: address of the interface
-            dhcplower - Lower range of assignable ip addresses
-            dhcpupper - Upper range of assignable ip addresses
+            dhcplower: Lower range of assignable ip addresses
+            dhcpupper: Upper range of assignable ip addresses
         """
         self.netname = self.next_name() # recieve name from VirtualBox
         self.netaddr = netaddr
@@ -29,6 +31,25 @@ class Network(object):
         r = subprocess.getoutput("vboxmanage list hostonlyifs|grep '" + netname + "'")
         if (r != ""):
             return True 
+    
+    @classmethod
+    def get_dhcp_leases(self, netname):
+        """
+        Retreive DHCP leases as a dictionary {mac: ip,}
+        """
+        leases = {}
+        # Linux config location ~/.config/VirtualBox/...
+        # Mac config location ~/Library/VirtualBox
+        path = Path.home().glob('Library' + '/VirtualBox' + '/HostInterfaceNetworking-' + netname + '-Dhcpd.leases')
+        for filepath in path:
+            # create element tree object
+            root = ET.parse(str(filepath)).getroot()
+            # Loop through the hosts and find assigned IP
+            for lease in root.findall('Lease'):
+                if lease.attrib["state"] != "expired":
+                    macaddr = lease.attrib["mac"]
+                    leases[macaddr] = lease.find('Address').attrib['value']
+        return leases
     
     def next_name(self): 
         """

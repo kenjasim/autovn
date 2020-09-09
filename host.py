@@ -2,8 +2,10 @@ from pathlib import Path
 import subprocess
 import re 
 import os 
+import time
 from network import Network
-
+from tabulate import tabulate
+from autossh import ssh_shell
 
 class Host(object): 
 
@@ -16,6 +18,8 @@ class Host(object):
         """
         self.vmname = vmname
         self.image = image 
+        self.username = 'dev'
+        self.password = 'ved'
         # Check if image template or vmname already exists 
         if self.check_exists(image):
             raise Exception("[!] Template image already exists, unable to duplicate")
@@ -78,6 +82,51 @@ class Host(object):
         cmd = 'vboxmanage modifyvm ' + self.vmname + ' --nic' + str(adapter) + ' nat'
         subprocess.getoutput(cmd)
     
+    def properties(self):
+        """
+        Retrieve configuration properties for the virtual machine.
+        Returns dict {"VMState": , "ostype": , "cpus":, "memory": }
+        """
+        # Get individual vm data
+        cmd = 'vboxmanage showvminfo ' +  self.vmname + ' --machinereadable'
+        info = subprocess.getoutput(cmd).splitlines()
+        # Parse data 
+        dinfo = {"VMState": None, "ostype": None, "cpus": None, "memory": None, "nics": {}}
+        for entry in info: 
+            key = entry.split("=")[0]
+            value = entry.split("=")[1].replace('"', "")
+            if key in dinfo.keys(): 
+                dinfo[key] = value
+            # Identify network connections
+            if "hostonlyadapter" in key or "natnet" in key:
+                nic = re.match('.*?([0-9]+)$', key).group(1)
+                dinfo["nics"][nic] = {"netname": value, "mac": None, "ip": None} 
+        # Identify MAC addresses 
+        for entry in info: 
+            key = entry.split("=")[0]
+            value = entry.split("=")[1].replace('"', "")
+            if "macaddress" in key:
+                nic = re.match('.*?([0-9]+)$', key).group(1)
+                # Format MAC address to lower case with colons 
+                mac = ':'.join(value.strip('"').lower()[i:i+2] for i in range(0,12,2))
+                dinfo["nics"][nic]["mac"] = mac
+        # Identify IP addresses
+        for nic in dinfo["nics"].values(): 
+            netname = nic["netname"]
+            mac = nic["mac"] 
+            if mac in Network.get_dhcp_leases(netname).keys():
+                nic["ip"] = Network.get_dhcp_leases(netname)[mac]
+        return dinfo
+    
+    def get_ip(self):
+        """
+        Return first assigned IP address. 
+        """
+        p = self.properties() 
+        for nic in p["nics"].values():
+            if nic["ip"] is not None: 
+                return nic["ip"] 
+    
     def start(self, headerless=True):
         """
         Start running virtual machine. 
@@ -99,25 +148,65 @@ class Host(object):
         """
         cmd = 'VBoxManage controlvm ' + self.vmname + ' poweroff'
         subprocess.getoutput(cmd)
+    
+    def restart(self):
+        """
+        Power off and on again the virtual machine
+        """
+        self.stop() 
+        self.start() 
 
-    def delete_vm(self, vm):
+    def delete(self):
         """
         Permanently delete the virtual machine and all it's files 
         """
         cmd = 'VBoxManage unregistervm --delete ' + self.vmname
         subprocess.getoutput(cmd)
-        
     
+    def ssh(self):
+        """
+        Launch SSH session with host.
+        """
+        shell = ssh_shell.Shell() 
+        # Retrieve IP address 
+        ip = self.get_ip()
+        if ip is None: 
+            raise Exception("[!] IP address not assigned.")
+        # Open SSH session through new Mac terminal 
+        shell.connect(hostname=self.username, hostaddr=ip, password=self.password)
+    
+    def __str__(self):
+        """
+        Print Host properties to console.
+        """
+        info = self.properties()
+        header = ["vmname", "VMState", "ostype", "cpus", "memory"]
+        data = [self.vmname] + [info[k] for k in header[1:]]
+        s = tabulate([data], header,tablefmt="fancy_grid") + "\n"
+        netinfo = info["nics"] 
+        header = ["nic", "netname", "mac", "ip"]
+        data = []
+        for nic in netinfo.keys():
+            row = [nic] + [netinfo[nic][k] for k in header[1:]] 
+            data.append(row) 
+        s += tabulate(data, header,tablefmt="fancy_grid")
+        return s
+
+
 ################################################################################
 # Main
 ################################################################################
 
 if __name__ == '__main__':
     h = Host("hostA", "Ubuntu Server 20.04")
-    h.assign_network(1, "vboxnet1")
-    h.assign_network(2, "vboxnet2")
     h.assign_internet(1) 
+    h.assign_network(2, "vboxnet0")
     h.start() 
+    time.sleep(30) 
+    print(h)
+    h.ssh() 
+    # h.stop() 
+    # h.delete() 
 
 ################################################################################
 # Resources
