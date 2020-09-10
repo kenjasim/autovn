@@ -10,17 +10,17 @@ Pythonic application for automatically launching virtual networks using VirtualB
 
 ### Quick Start
 ```bash 
-$ python3 topo.py
+$ python3 cli.py
 ```
 
 ### Create Default Network Topology
 ```python
-t = Topology()
-t.start() 
+>>> build
+>>> start 
 ```
 ### Display host configs 
 ```python 
-t.show_hosts() 
+show h
 ```
 
 ```bash
@@ -37,7 +37,7 @@ t.show_hosts()
 
 ### Display network configs 
 ```python 
-t.show_networks()
+show n
 ```
 
 ```bash
@@ -60,16 +60,16 @@ t.show_networks()
 
 ### Spawn SSH shells (Mac terminal) automatically 
 ```python
->>> t.shells() 
+>>> shell
 ```
 or individually:
 ```python
->>> host.shell() 
+>>> shell <hostname>
 ```
 
-### Cleaup 
+### Cleanup 
 ```python
->>> t.destroy() 
+>>> destroy
 ```
 
 # Troubleshooting 
