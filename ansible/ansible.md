@@ -9,6 +9,12 @@ Add ansible to PATH
 ```bash
 $ export PATH=$PATH:/Users/danielcrouch/Library/Python/3.8/bin
 ```
+Permanently add ansible to path 
+Add: /Users/<username>/Library/Python/3.8/bin/
+```python
+nano /etc/paths
+```
+
 Validate installation 
 ```bash
 ansible --version
@@ -64,7 +70,12 @@ https://github.com/ansible/ansible/tree/devel/examples
 ## Method
 1. Update ansible.cfg *inventory* to point to hosts
 2. Update hosts to include ip addresses of target machines
+   20.0.0.2 ansible_user=dev
 3. Run test 
     ```bash
     $ ansible -m ping all
+    ``` 
+4. Get hostname 
+   ```bash
+    $ ansible -m shell -a 'hostname' all
     ``` 

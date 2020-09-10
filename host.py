@@ -197,6 +197,7 @@ class Host(object):
         shell = ssh_shell.Shell() 
         ip = self.get_ip() 
         r = shell.copy(hostname=self.username, hostaddr=ip, password=self.password, keypath=(str(ap) + ".pub"))
+        print(r)
         if "try logging" not in r: 
             raise Exception("[!] Failed to distribute SSH public key to host.")
     
