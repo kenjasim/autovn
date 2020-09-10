@@ -87,6 +87,19 @@ class Console(Cmd):
             self.topo.shells() 
         except Exception as e:
             handle_ex(e)
+    
+    ############################################
+    # Distribute Keys 
+    ############################################
+
+    def do_keys(self, cmd):
+        """
+        Distribute SSH keys to hosts. 
+        """
+        try:
+            self.topo.send_keys() 
+        except Exception as e:
+            handle_ex(e)
 
     ############################################
     # Network Destroy 

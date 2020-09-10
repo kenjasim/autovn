@@ -6,6 +6,13 @@ Pythonic application for automatically launching virtual networks using VirtualB
 * Overide the Topology class to create custom topologies. 
 * Automatically spawns SSH sessions in new Mac terminal windows. 
 
+## Installation 
+
+### ssh-copy-id
+```bash
+brew install ssh-copy-id
+```
+
 ## Use case
 
 ### Quick Start

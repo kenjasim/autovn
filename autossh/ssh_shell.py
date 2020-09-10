@@ -1,4 +1,5 @@
 from subprocess import Popen, PIPE
+import subprocess
 import pathlib
 
 class Shell(object):
@@ -18,7 +19,15 @@ class Shell(object):
             + "\"'")
         # Execute as subprocess 
         r = Popen([cmd], universal_newlines = True, shell=True, stdout=PIPE)
-
+    
+    def copy(self, hostname="dev", hostaddr="20.0.0.5", password="ved", keypath="~/.ssh/id_rsa.pub"):
+        """Share SSH public key with host."""
+        bsPath = str(pathlib.Path(__file__).parent.absolute())
+        cmd = bsPath + "/ssh_copy.sh " + hostname + " " + hostaddr + " " + password + " " + keypath
+        # Execute as subprocess 
+        r = subprocess.getoutput(cmd)
+        return r
+   
 
 ################################################################################
 # Main

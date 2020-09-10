@@ -146,6 +146,14 @@ class Topology():
         """
         for host in self.hosts.values(): 
             host.ssh() 
+    
+    def send_keys(self):
+        """
+        Distribute SSH public keys to hosts. 
+        Support for Mac only. 
+        """
+        for host in self.hosts.values(): 
+            host.dist_pkey() 
 
 
 ################################################################################

@@ -1,0 +1,24 @@
+--- 
+- name: install and start apache 
+  hosts: web # specifies inventory book 
+  remote_user: bob 
+  become_method: sudo
+  become_user: root
+  vars:
+    http_port: 80
+    max_clients: 200
+  
+  tasks:
+  - name: install httpd 
+    yum: name=httpd state=latest 
+  - name: write apache config file 
+    template: src=srv/httpd.j2 dest=/etc/httpd.conf
+    notify:
+    - restart apache 
+  - name: start httpd 
+    service: name=httpd state=running 
+  
+  handlers:
+  - name: restart apache 
+    service: name=httpd state=restarted 
+

@@ -175,6 +175,31 @@ class Host(object):
         # Open SSH session through new Mac terminal 
         shell.connect(hostname=self.username, hostaddr=ip, password=self.password)
     
+    def dist_pkey(self): 
+        """
+        Create and distribute SSH keys for/to the host.
+        """
+        keyname = "id_rsa_vb"
+        ap = Path(__file__).parent.absolute() / "keys" / keyname
+        # Check if key already exists 
+        if not ((os.path.isfile(str(ap))) or (os.path.isfile(str(ap) + ".pub"))):
+            # Create RSA key pair
+            cmd = "ssh-keygen -t rsa -b 4096 -q -N \"\" -f " + str(ap)
+            s = subprocess.getoutput(cmd)
+        if not ((os.path.isfile(str(ap))) or (os.path.isfile(str(ap) + ".pub"))):
+            raise Exception("[!] RSA key pair generation failed.")
+        # Add private key the SSH agent 
+        cmd = "eval `ssh-agent`"
+        s = subprocess.getoutput(cmd)
+        cmd = "ssh-add " + str(ap)
+        s = subprocess.getoutput(cmd)
+        # Share public key with host 
+        shell = ssh_shell.Shell() 
+        ip = self.get_ip() 
+        r = shell.copy(hostname=self.username, hostaddr=ip, password=self.password, keypath=(str(ap) + ".pub"))
+        if "try logging" not in r: 
+            raise Exception("[!] Failed to distribute SSH public key to host.")
+    
     def __str__(self):
         """
         Print Host properties to console.
@@ -207,7 +232,10 @@ if __name__ == '__main__':
     h.ssh() 
     h.stop() 
     h.destroy() 
+    
+        
 
 ################################################################################
 # Resources
 ################################################################################
+# https://en.wikipedia.org/wiki/Ssh-keygen
