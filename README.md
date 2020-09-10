@@ -74,6 +74,15 @@ or individually:
 >>> shell <hostname>
 ```
 
+### Generate and distribute SSH keys 
+```python
+>>> shell
+```
+or individually:
+```python
+>>> keys
+```
+
 ### Cleanup 
 ```python
 >>> destroy
