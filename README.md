@@ -71,3 +71,22 @@ or individually:
 ```python
 >>> t.destroy() 
 ```
+
+# Troubleshooting 
+
+## Virtual Machines abort on Mac OS Catalina 
+
+```bash 
+$ VBoxManage setextradata global GUI/HidLedsSync 0
+$ VBoxManage setextradata global "GUI/HidLedsSync"
+```
+
+## Cloned Virtual Machines assigned duplicated IP's by DHCP Server 
+On Linux Ubuntu 18.x and up, the DHCP server assigns IP addresses by the machine-id not the MAC address. Solution is to create a base imagine without a preset machine-id as follows: 
+
+```bash
+sudo rm /etc/machine-id /var/lib/dbus/machine-id
+sudo touch /etc/machine-id
+sudo chmod 444 /etc/machine-id
+sudo shutdown -h now
+``` 
