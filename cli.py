@@ -139,6 +139,10 @@ class Console(Cmd):
         """
         exit the application
         """
+        # Destroy network
+        a = input("Destroy the network before exiting application (y/n):")
+        if a == 'y':
+            self.do_destroy("") 
         return True
 
 ################################################################################

@@ -81,3 +81,4 @@ https://github.com/ansible/ansible/tree/devel/examples
     ``` 
 Playbooks
 5. Make directory tree: roles/<role name>/tasks/main.yml
+6. Create playbook.yml in the main folder 
