@@ -1,4 +1,4 @@
-# AutoVBox
+# Automated Virtual Networks (AVN)
 
 Pythonic application for automatically launching virtual networks using VirtualBox. 
 
