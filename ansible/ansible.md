@@ -79,3 +79,5 @@ https://github.com/ansible/ansible/tree/devel/examples
    ```bash
     $ ansible -m shell -a 'hostname' all
     ``` 
+Playbooks
+5. Make directory tree: roles/<role name>/tasks/main.yml

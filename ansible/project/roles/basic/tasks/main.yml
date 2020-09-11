@@ -1,0 +1,6 @@
+- name: "Installing python" 
+  apt: pkg=python state=latest
+- name: "change hostname to master"
+  hostname:
+    name: "master"
+
