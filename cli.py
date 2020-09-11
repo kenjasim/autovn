@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # AutoVBox Command Line
 #
 # Author: Daniel Crouch
@@ -84,9 +86,18 @@ class Console(Cmd):
     def do_shell(self, cmd):
         """
         Start shell sessions.
+        Options:
+            vmname: start a shell session with a specific vm,
+            if none specified then sessions started with all. 
         """
+        # command validation
+        cmds = cmd.split()
+        vmname = "all" 
+        if len(cmds) == 1:
+            vmname = cmds[0]
+        # command execution 
         try:
-            self.topo.shells() 
+            self.topo.shell(vmname) 
         except Exception as e:
             handle_ex(e)
     

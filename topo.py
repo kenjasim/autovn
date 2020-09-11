@@ -139,13 +139,20 @@ class Topology():
         summary = tabulate(rows, header, tablefmt="fancy_grid")
         print(summary) 
     
-    def shells(self):
+    def shell(self, vmname='all'):
         """
         Create an SSH shell terminal sessions with each host.
         Support for Mac only. 
+        Options:
+            vmname: name of rm to create shell session for 
         """
-        for host in self.hosts.values(): 
-            host.ssh() 
+        if vmname in self.hosts.keys():
+            self.hosts[vmname].ssh() 
+        elif vmname == 'all':
+            for host in self.hosts.values(): 
+                host.ssh() 
+        else:
+            raise Exception("[!] Unknown vmname entered.")
     
     def send_keys(self):
         """
@@ -166,7 +173,7 @@ if __name__ == '__main__':
     t.show_hosts() 
     t.show_networks()
     time.sleep(10)
-    t.shells() 
+    t.shell() 
     print("close (y/n):")
     a = input() 
     if a == 'y':
