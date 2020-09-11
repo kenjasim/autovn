@@ -1,0 +1,35 @@
+# Network Configuration
+networks:
+  hoif1:
+    netaddr: "10.0.0.1"
+    dhcplower: "10.0.0.2"
+    dhcpupper: "10.0.0.254"
+  hoif2:
+    netaddr: "20.0.0.1"
+    dhcplower: "20.0.0.2"
+    dhcpupper: "20.0.0.254"
+
+#Hosts Configuration
+hosts:
+  target1:
+    image: "vm_templates/Metasploitable.ova"
+    username: "msfadmin"
+    password: "msfadmin"
+    networks:
+      - hoif1
+      - hoif2
+    internet_access: False
+  target2:
+    image: "vm_templates/Metasploitable.ova"
+    username: "msfadmin"
+    password: "msfadmin"
+    networks:
+      - hoif1
+    internet_access: False
+  target3:
+    image: "vm_templates/Metasploitable.ova"
+    username: "msfadmin"
+    password: "msfadmin"
+    networks:
+      - hoif2
+    internet_access: False

@@ -20,49 +20,53 @@ class Console(Cmd):
     def __init__(self):
         Cmd.__init__(self)
         self.topo = None
-        # Create topology 
-        print("Initialising network...")
-        self.do_build("")
-        print("Initialisation complete.")
-        print("Starting virtual machines...")
-        self.do_start("")
-        print("Network is live.")
 
     ############################################
-    # Build Network Topology 
+    # Build Network Topology
     ############################################
 
     def do_build(self, cmd):
         """
-        Initialise network. 
+        Initialise network. Leave template blank for default k8 configuration
+
+        build <template>
         """
+        cmds = cmd.split()
+        if len(cmds) > 2:
+            print("[!] Invalid number of arguments, see 'help build'")
+            return
+
         try:
-            self.topo = Topology() 
+            print("Initialising network...")
+            if len(cmds) == 2:
+                self.topo = Topology(cmds[1])
+            else:
+                self.topo = Topology("k8")
         except Exception as e:
             handle_ex(e)
 
     ############################################
-    # Start Network Topology 
+    # Start Network Topology
     ############################################
 
     def do_start(self, cmd):
         """
-        Initialise network. 
+        Initialise network.
         """
         try:
-            self.topo.start() 
+            self.topo.start()
         except Exception as e:
             handle_ex(e)
 
     ############################################
-    # Show properties 
+    # Show properties
     ############################################
 
     def do_show(self, cmd):
         """
         Show Topology properties.
         Options:
-            h: host properties 
+            h: host properties
             n: network adapter properties
         """
         # command validation
@@ -70,12 +74,12 @@ class Console(Cmd):
         if len(cmds) != 1:
             print("[!] Invalid number of arguments, see 'help show'")
             return
-        # command execution 
+        # command execution
         try:
             if cmds[0] == 'h':
-                self.topo.show_hosts() 
+                self.topo.show_hosts()
             if cmds[0] == 'n':
-                self.topo.show_networks() 
+                self.topo.show_networks()
         except Exception as e:
             handle_ex(e)
 
@@ -88,34 +92,34 @@ class Console(Cmd):
         Start shell sessions.
         Options:
             vmname: start a shell session with a specific vm,
-            if none specified then sessions started with all. 
+            if none specified then sessions started with all.
         """
         # command validation
         cmds = cmd.split()
-        vmname = "all" 
+        vmname = "all"
         if len(cmds) == 1:
             vmname = cmds[0]
-        # command execution 
+        # command execution
         try:
-            self.topo.shell(vmname) 
+            self.topo.shell(vmname)
         except Exception as e:
             handle_ex(e)
-    
+
     ############################################
-    # Distribute Keys 
+    # Distribute Keys
     ############################################
 
     def do_keys(self, cmd):
         """
-        Distribute SSH keys to hosts. 
+        Distribute SSH keys to hosts.
         """
         try:
-            self.topo.send_keys() 
+            self.topo.send_keys()
         except Exception as e:
             handle_ex(e)
 
     ############################################
-    # Network Destroy 
+    # Network Destroy
     ############################################
 
     def do_destroy(self, cmd):
@@ -123,10 +127,10 @@ class Console(Cmd):
         Destroy the network.
         """
         try:
-            self.topo.destroy() 
+            self.topo.destroy()
         except Exception as e:
             handle_ex(e)
-    
+
     ############################################
     # exit process
     ############################################
@@ -138,7 +142,7 @@ class Console(Cmd):
         return True
 
 ################################################################################
-# CLI Exception handler 
+# CLI Exception handler
 ################################################################################
 
 def handle_ex(exception):
