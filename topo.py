@@ -44,16 +44,16 @@ class Topology():
         self.networks[n1.get_name()] = n1
         # Create host(s)
         self.hosts["master"] = Host("master", "vm_templates/Ubuntu Server 20.04.ova", "dev", "ved")
-        self.hosts["slave1"] = Host("slave1", "vm_templates/Ubuntu Server 20.04.ova", "dev", "ved")
-        self.hosts["slave2"] = Host("slave2", "vm_templates/Ubuntu Server 20.04.ova", "dev", "ved")
+        self.hosts["worker1"] = Host("worker1", "vm_templates/Ubuntu Server 20.04.ova", "dev", "ved")
+        self.hosts["worker2"] = Host("worker2", "vm_templates/Ubuntu Server 20.04.ova", "dev", "ved")
         # Assign NAT for internet access
         self.hosts["master"].assign_internet(1)
-        self.hosts["slave1"].assign_internet(1)
-        self.hosts["slave2"].assign_internet(1)
+        self.hosts["worker1"].assign_internet(1)
+        self.hosts["worker2"].assign_internet(1)
         # Assign to local network
         self.hosts["master"].assign_network(2, n1.get_name())
-        self.hosts["slave1"].assign_network(2, n1.get_name())
-        self.hosts["slave2"].assign_network(2, n1.get_name())
+        self.hosts["worker1"].assign_network(2, n1.get_name())
+        self.hosts["worker2"].assign_network(2, n1.get_name())
 
     def start(self):
         """
@@ -186,7 +186,7 @@ class Topology():
 ################################################################################
 
 if __name__ == '__main__':
-    t = Topology()
+    t = Topology("k8")
     t.start()
     t.show_hosts()
     t.show_networks()
