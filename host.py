@@ -160,9 +160,14 @@ class Host(object):
         """
         Permanently delete the virtual machine and all it's files.
         """
+        # Delete SSH known_hosts entry 
+        if self.get_ip():
+            cmd = "sed -i '' '/" + self.get_ip() + "/d' ~/.ssh/known_hosts"
+            subprocess.getoutput(cmd)
+        # Delete virtual machine from VirtualBox 
         cmd = 'VBoxManage unregistervm --delete ' + self.vmname
         subprocess.getoutput(cmd)
-    
+        
     def ssh(self):
         """
         Launch SSH session with host.

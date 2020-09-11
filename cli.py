@@ -12,6 +12,8 @@ from topo import Topology
 
 class Console(Cmd):
     prompt = ">>> "
+    with open('misc/intro.txt', 'r') as f:
+        intro = f.read()
 
     def __init__(self):
         Cmd.__init__(self)

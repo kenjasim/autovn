@@ -13,12 +13,14 @@ eval spawn ssh -oStrictHostKeyChecking=no -oCheckHostIP=no $hostname@$hostaddr
 
 # Use the correct prompt
 set prompt ":|#|\\\$"
-interact -o -nobuffer -re $prompt return # wait for prompt and return 
-# wait for password request (consider if problems, other requests may preempt) 
-expect "password"
-# Send password
-send "$password\r"
-interact -o -nobuffer -re $prompt return
+# wait for prompt to return 
+# interact -o -nobuffer -re $prompt return 
+
+# handle password request (consider if problems, other requests may preempt) 
+expect {
+        # handle password request (preempts if fingerprint not requested) 
+        "password" {send "$password\r"; puts "\nPassword sent."}
+    }
 
 # Send a single command
 # send "ls\r"
