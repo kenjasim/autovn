@@ -1,0 +1,9 @@
+[host1]
+20.0.0.2 ansible_user=dev
+
+[host2]
+
+
+[host3]
+
+

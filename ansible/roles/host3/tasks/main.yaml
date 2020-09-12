@@ -1,0 +1,3 @@
+- name: change hostname to host3
+  hostname:
+    name: worker

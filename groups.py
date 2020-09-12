@@ -1,6 +1,7 @@
 from pathlib import Path
 import xml.etree.ElementTree as ET
 import subprocess
+import os 
 
 
 class Group(object):
@@ -29,22 +30,42 @@ class Group(object):
         """
         Generate the ansible role directory and YAML config file.
         """
-        # ansiblePath = Path(__file__).parent.absolute() / 'ansible'
-        # # Update ansible hosts file 
-        # if not Path.is_file(str(ansiblePath / 'hosts')):
-        #     print("can't find it :(")
-        #     with open(str(ansiblePath / 'hosts'), 'w'): pass 
-        # if not Path.is_file(str(ansiblePath / 'hosts')):
-        #     raise Exception("[!] Unable to write to ansible host file")
-        # with open(str(ansiblePath / 'hosts'), "a") as hosts:
-        #     hosts.write("[" + self.name + "]\n")
-        #     for host in self.hosts:
-        #         hosts.write(host.get_ip() + " ansible_user=" + host.get_username())
-        #     hosts.write("\n")
+        ansiblePath = Path(__file__).parent.absolute() / 'ansible'
+        # Update ansible hosts file 
+        print(str(ansiblePath))
+        if not os.path.isfile(str(ansiblePath / 'hosts')):
+            print("can't find it :(")
+            with open(str(ansiblePath / 'hosts'), 'w'): pass 
+        if not os.path.isfile(str(ansiblePath / 'hosts')):
+            raise Exception("[!] Unable to write to ansible host file")
+        with open(str(ansiblePath / 'hosts'), "a") as hosts:
+            hosts.write("[" + self.name + "]\n")
+            for host in self.hosts:
+                if not host.get_ip():
+                    raise Exception("[!] Host has not been assigned and IP for ansible config.")
+                hosts.write(host.get_ip() + " ansible_user=" + host.get_username())
+            hosts.write("\n\n")
         # Create directory tree structure /roles/<groupname>/tasks/main.yaml 
-
+        p = ansiblePath / 'roles'
+        if not os.path.isdir(str(p)):
+            os.mkdir(str(p))
+        p = p / self.name
+        if not os.path.isdir(str(p)):
+            os.mkdir(str(p))
+        p = p / 'tasks'
+        if not os.path.isdir(str(p)):
+            os.mkdir(str(p))
+        # Create main.yaml config file
+        p = p / 'main.yaml'
+        if not os.path.isfile(str(p)):
+            with open(str(p), 'w'): pass 
         # Populate main.yaml config file with tasks 
-
+        with open(str(p), "a") as f:
+            # Add tasks 
+            if self.hostname:
+                f.write("- name: change hostname to " + self.hostname + "\n")
+                f.write("  hostname:" + "\n")
+                f.write("    name: " + self.hostname + "\n") 
     
     def __str__(self): 
         s = self.name
