@@ -24,7 +24,6 @@ class Topology():
         Keyword Arguments:
             template_file - path to the yaml file to read
         """
-
         # Check if the file exits, if not then raise an exception
         if (os.path.isfile(template_file)):
             self.networks, self.hosts = Template(template_file).parse()

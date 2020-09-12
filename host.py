@@ -230,7 +230,7 @@ class Host(object):
 ################################################################################
 
 if __name__ == '__main__':
-    h = Host("hostA", "Ubuntu Server 20.04")
+    h = Host("master", "vm_templates/Ubuntu Server 20.04.ova", "dev", "ved")
     h.assign_internet(1)
     h.assign_network(2, "vboxnet0")
     h.start()

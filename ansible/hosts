@@ -11,11 +11,11 @@
 # Ex 1: Ungrouped hosts, specify before any group headers:
 
 [master]
-20.0.0.2 ansible_user=dev
-
-[slave]
-20.0.0.3 ansible_user=dev
 20.0.0.4 ansible_user=dev
+
+[worker]
+20.0.0.2 ansible_user=dev
+20.0.0.3 ansible_user=dev
 
 # Ex 2: A collection of hosts belonging to the 'webservers' group:
 

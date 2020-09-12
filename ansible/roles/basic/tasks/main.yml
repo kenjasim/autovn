@@ -1,0 +1,37 @@
+---
+- name: Upgrade all packages to the latest version
+  apt:
+    name: "*"
+    state: latest
+
+- name: Update all packages to the latest version
+  apt:
+    upgrade: dist
+
+- name: Run the equivalent of "apt-get update" as a separate step
+  apt:
+    update_cache: yes
+
+- name: Remove useless packages from the cache
+  apt:
+    autoclean: yes
+
+- name: Remove dependencies that are no longer required
+  apt:
+    autoremove: yes
+
+- name: Install additional software
+  apt: 
+   pkg: 
+   name:
+   - python
+   - git
+   state: latest
+
+- name: Copy file to host user home directory
+  copy: src=./test.txt dest=/home/dev/ owner=dev group=dev mode=0644
+
+- name: Run shell script 
+  shell: touch newtest.txt
+
+
