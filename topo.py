@@ -26,7 +26,7 @@ class Topology():
         """
         # Check if the file exits, if not then raise an exception
         if (os.path.isfile(template_file)):
-            self.networks, self.hosts = Template(template_file).parse()
+            self.networks, self.groups, self.hosts = Template(template_file).parse()
         else:
             raise Exception("[!] Failed to find the file." + template_file)
 
@@ -154,6 +154,16 @@ class Topology():
         """
         for host in self.hosts.values():
             host.dist_pkey()
+    
+    def deploy_config(self):
+        """
+        Automatically deploy group configurations to hosts using Ansible.
+        """
+        for group in self.groups.values():
+            group.create_ansible_role()
+            print(group)
+
+
 
 ################################################################################
 # Main

@@ -117,6 +117,19 @@ class Console(Cmd):
             self.topo.send_keys()
         except Exception as e:
             handle_ex(e)
+    
+    ############################################
+    # Deploy group configurations to hosts 
+    ############################################
+
+    def do_config(self, cmd):
+        """
+        Deploy group configurations to hosts.
+        """
+        try:
+            self.topo.deploy_config() 
+        except Exception as e:
+            handle_ex(e)
 
     ############################################
     # Network Destroy
