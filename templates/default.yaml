@@ -1,4 +1,13 @@
 ---
+# Group Configuration
+groups:
+  host1:
+    hostname: "host1"
+  host2:
+    hostname: "host2"
+  host3:
+    hostname: "host3"
+
 # Network Configuration
 networks:
   hoif1:
@@ -14,6 +23,8 @@ hosts:
     password: "ved"
     networks:
       - hoif1
+    groups:
+      - host1
     internet_access: True
   host2:
     image: "vm_templates/Ubuntu Server 20.04.ova"
@@ -21,6 +32,8 @@ hosts:
     password: "ved"
     networks:
       - hoif1
+    groups:
+      - host2
     internet_access: True
   host3:
     image: "vm_templates/Ubuntu Server 20.04.ova"
@@ -28,4 +41,6 @@ hosts:
     password: "ved"
     networks:
       - hoif1
+    groups:
+      - host3
     internet_access: True

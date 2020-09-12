@@ -1,7 +1,7 @@
 3
 # Ansible
 
-## Installation 
+## Installation
 ```bash
 $ pip install --user ansible
 ```
@@ -9,61 +9,56 @@ Add ansible to PATH
 ```bash
 $ export PATH=$PATH:/Users/danielcrouch/Library/Python/3.8/bin
 ```
-Permanently add ansible to path 
+Permanently add ansible to path
 Add: /Users/<username>/Library/Python/3.8/bin/
 ```python
 nano /etc/paths
 ```
 
-Validate installation 
+Validate installation
 ```bash
 ansible --version
 ```
-Install SSHPass
-```bash
 
-$brew install hudochenkov/sshpass/sshpass
-```
+## Architecture
 
-## Architecture 
-
-### Inventories: 
+### Inventories:
 Lists of host/targets requiring automated configuration.
 
-### Playbooks: 
+### Playbooks:
 YAML files that describe the desired state.
-Contains plays, plays contain tasks, tasks call modules. 
-Tasks run sequentially. 
+Contains plays, plays contain tasks, tasks call modules.
+Tasks run sequentially.
 Handlers are triggered by tasks, running once at the end of plays.
 
-```bash 
-ansible-playbook <options> 
-ansible-playbook my-playbook.yml 
+```bash
+ansible-playbook <options>
+ansible-playbook my-playbook.yml
 ```
 
 https://docs.ansible.com/ansible/latest/user_guide/playbooks.html#working-with-playbooks
 
-### Check mode 
-Dry-run for ad-hoc commands and playbooks. Validates before making state changes on the target system. 
+### Check mode
+Dry-run for ad-hoc commands and playbooks. Validates before making state changes on the target system.
 ```bash
 ansible web -C -m yum -a "name=httpd state=latest"
-ansible-playbook -C my-playbook.yml
+ansible-playbook -C my-playbook.ymlmac
 ```
 
 ## Command Line (AD-HOC)
-Ensure system is up and accesible 
-```bash 
+Ensure system is up and accesible
+```bash
 ansible web -m ping
 ```
-Ensure a package is updated 
-Ensure system is up and accesible 
-```bash 
+Ensure a package is updated
+Ensure system is up and accesible
+```bash
 ansible web -s -m yum -a "name=openssl state=latest"
 ```
 
 https://docs.ansible.com/ansible/latest/user_guide/intro_adhoc.html#intro-adhoc
 
-### Default/Example Files 
+### Default/Example Files
 https://github.com/ansible/ansible/tree/devel/examples
 
 
@@ -71,17 +66,16 @@ https://github.com/ansible/ansible/tree/devel/examples
 1. Update ansible.cfg *inventory* to point to hosts
 2. Update hosts to include ip addresses of target machines
    20.0.0.2 ansible_user=dev
-3. Run test 
+3. Run test
     ```bash
     $ ansible -m ping all
-    ``` 
+    ```
 4. Get hostname 
    ```bash
     $ ansible -m shell -a 'hostname' all
-    ``` 
+    ```
 Playbooks
 5. Make directory tree: roles/<role name>/tasks/main.yml
-6. Create playbook.yml in the main folder 
+6. Create playbook.yml in the main folder
 7. ansible-playbook -K playbook.yml
-    Option: -K to enable password request 
-
+    Option: -K to enable password request

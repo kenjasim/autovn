@@ -14,6 +14,7 @@ class Template():
         # Generate the network
         self.networks = {}
         self.hosts = {}
+        self.groups = {}
 
         # Read the template file
         file = open(template_file)
@@ -33,6 +34,23 @@ class Template():
 
         # Return the lists
         return self.networks, self.hosts
+
+    def read_groups(self):
+        """
+        Reads the network information from the template
+        """
+        # Read the hosts information and catch if it doesnt exist
+
+        if "groups" in self.template:
+            groups = self.template['groups']
+
+            # Loop through the hosts and collect the information
+            for group, values in group.items():
+                if "hostname" in values:
+                    self.groups[group] = values["hostname"]
+
+        else:
+            raise Exception("[!] No group information in template")
 
 
     def read_networks(self):
@@ -77,6 +95,5 @@ class Template():
                         # Check if its in the list and that the addapters havent gone over 8
                         if network in networks and index + 1 < 8 and network != "Internet":
                             self.hosts[host].assign_network(index+1, self.networks[network].get_name())
-
         else:
             raise Exception("[!] No host information in template")
