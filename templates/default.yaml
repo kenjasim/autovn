@@ -8,21 +8,21 @@ networks:
 
 #Hosts Configuration
 hosts:
-  master:
+  host1:
     image: "vm_templates/Ubuntu Server 20.04.ova"
     username: "dev"
     password: "ved"
     networks:
       - hoif1
     internet_access: True
-  worker1:
+  host2:
     image: "vm_templates/Ubuntu Server 20.04.ova"
     username: "dev"
     password: "ved"
     networks:
       - hoif1
     internet_access: True
-  worker2:
+  host3:
     image: "vm_templates/Ubuntu Server 20.04.ova"
     username: "dev"
     password: "ved"

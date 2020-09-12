@@ -16,7 +16,7 @@ class Topology():
     Launch a network toplogy using VirtualBox
     """
 
-    def __init__(self, template_file):
+    def __init__(self, template_file="templates/default.yaml"):
         """
         Read a yaml configuration file to get the network required and then
         initialise the network
@@ -27,32 +27,8 @@ class Topology():
         # Check if the file exits, if not then raise an exception
         if (os.path.isfile(template_file)):
             self.networks, self.hosts = Template(template_file).parse()
-        elif(template_file == "k8"):
-            self.k8()
         else:
             raise Exception("[!] Failed to find the file." + template_file)
-
-    def k8(self):
-        """
-        Initialise network, simple master (1) slave (2) configuration.
-        """
-        self.hosts = {}
-        self.networks = {}
-        # Create network(s)
-        n1 = Network("20.0.0.1", "20.0.0.2", "20.0.0.254")
-        self.networks[n1.get_name()] = n1
-        # Create host(s)
-        self.hosts["master"] = Host("master", "vm_templates/Ubuntu Server 20.04.ova", "dev", "ved")
-        self.hosts["worker1"] = Host("worker1", "vm_templates/Ubuntu Server 20.04.ova", "dev", "ved")
-        self.hosts["worker2"] = Host("worker2", "vm_templates/Ubuntu Server 20.04.ova", "dev", "ved")
-        # Assign NAT for internet access
-        self.hosts["master"].assign_internet(1)
-        self.hosts["worker1"].assign_internet(1)
-        self.hosts["worker2"].assign_internet(1)
-        # Assign to local network
-        self.hosts["master"].assign_network(2, n1.get_name())
-        self.hosts["worker1"].assign_network(2, n1.get_name())
-        self.hosts["worker2"].assign_network(2, n1.get_name())
 
     def start(self):
         """

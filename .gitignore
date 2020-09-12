@@ -1,7 +1,8 @@
 /vm_templates
 .DS_Store
 __pycache__
-/keys/
+!keys
+keys/*
 
 # VM Images
 *.ova

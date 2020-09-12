@@ -38,10 +38,10 @@ class Console(Cmd):
 
         try:
             print("Initialising network...")
-            if len(cmds) == 2:
-                self.topo = Topology(cmds[1])
+            if len(cmds) == 1:
+                self.topo = Topology(template_file=cmds[0])
             else:
-                self.topo = Topology("k8")
+                self.topo = Topology()
         except Exception as e:
             handle_ex(e)
 
@@ -142,7 +142,7 @@ class Console(Cmd):
         # Destroy network
         a = input("Destroy the network before exiting application (y/n):")
         if a == 'y':
-            self.do_destroy("") 
+            self.do_destroy("")
         return True
 
 ################################################################################
