@@ -178,7 +178,7 @@ class Host(object):
         ip = self.get_ip()
         if ip is None:
             raise Exception("[!] IP address not assigned.")
-        # Open SSH session through new Mac terminal
+        # Open SSH session through new terminal
         shell.connect(hostname=self.username, hostaddr=ip, password=self.password)
 
     def dist_pkey(self):

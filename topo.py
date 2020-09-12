@@ -1,4 +1,4 @@
-import os
+import os,sys
 from concurrent.futures import ThreadPoolExecutor
 import time
 import subprocess
@@ -178,7 +178,6 @@ class Topology():
         """
         for host in self.hosts.values():
             host.dist_pkey()
-
 
 ################################################################################
 # Main
