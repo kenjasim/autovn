@@ -50,7 +50,7 @@ class Template():
                     self.groups[group] = values["hostname"]
 
         else:
-            raise Exception("[!] No group information in template")
+            raise Exception("No group information in template")
 
 
     def read_networks(self):
@@ -67,7 +67,7 @@ class Template():
                 if "netaddr" and "dhcplower" and "dhcpupper" in values:
                     self.networks[network] = Network(values["netaddr"], values["dhcplower"], values["dhcpupper"])
         else:
-            raise Exception("[!] No network information in template")
+            raise Exception("No network information in template")
 
     def read_hosts(self):
         """
@@ -96,4 +96,4 @@ class Template():
                         if network in networks and index + 1 < 8 and network != "Internet":
                             self.hosts[host].assign_network(index+1, self.networks[network].get_name())
         else:
-            raise Exception("[!] No host information in template")
+            raise Exception("No host information in template")

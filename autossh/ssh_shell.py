@@ -30,7 +30,7 @@ class Shell(object):
                 + password
                 + "; zsh \"")
         else:
-            raise Exception("[!] OS not supported, please open shell manually")
+            raise Exception("OS not supported, please open shell manually")
 
         # Execute as subprocess
         r = Popen([cmd], universal_newlines = True, shell=True, stdout=PIPE)

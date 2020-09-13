@@ -6,6 +6,7 @@ import time
 from network import Network
 from tabulate import tabulate
 from autossh import ssh_shell
+from print_colours import Print
 
 class Host(object):
 
@@ -24,9 +25,9 @@ class Host(object):
         self.password = password
         # Check if image template or vmname already exists
         if self.check_exists(image):
-            raise Exception("[!] Template image already exists, unable to duplicate")
+            raise Exception("Template image already exists, unable to duplicate")
         if self.check_exists(vmname):
-            raise Exception("[!] VM image with assigned name already exists")
+            raise Exception("VM image with assigned name already exists")
         # Import image into VirtualBox
         self.import_image()
 
@@ -51,9 +52,9 @@ class Host(object):
 
         # Check vm successfully imported
         if not self.check_exists(self.vmname):
-            raise Exception("[!] Failed to import virtual machine.")
+            raise Exception("Failed to import virtual machine.")
         else:
-            print("\u001b[32;1m[✓] Successfully imported machine " + self.vmname + "\u001b[0m")
+            Print.print_success("Successfully imported machine " + self.vmname)
 
     def assign_network(self, adapter, netname):
         """
@@ -141,7 +142,9 @@ class Host(object):
         r = subprocess.getoutput(cmd)
         # Check if successfull
         if "successfully started" not in r:
-            raise Exception("[!] Failed to start virtual machine: " + r)
+            raise Exception("Failed to start virtual machine: " + r)
+
+        Print.print_success("Launched machine " + self.vmname)
 
     def stop(self):
         """
@@ -149,6 +152,8 @@ class Host(object):
         """
         cmd = 'VBoxManage controlvm ' + self.vmname + ' poweroff'
         subprocess.getoutput(cmd)
+
+        Print.print_success("Powered off machine " + self.vmname)
 
     def restart(self):
         """
@@ -169,6 +174,8 @@ class Host(object):
         cmd = 'VBoxManage unregistervm --delete ' + self.vmname
         subprocess.getoutput(cmd)
 
+        Print.print_success("Destroyed machine " + self.vmname)
+
     def ssh(self):
         """
         Launch SSH session with host.
@@ -177,7 +184,7 @@ class Host(object):
         # Retrieve IP address
         ip = self.get_ip()
         if ip is None:
-            raise Exception("[!] IP address not assigned.")
+            raise Exception("IP address not assigned.")
         # Open SSH session through new terminal
         shell.connect(hostname=self.username, hostaddr=ip, password=self.password)
 
@@ -193,7 +200,7 @@ class Host(object):
             cmd = "ssh-keygen -t rsa -b 4096 -q -N \"\" -f " + str(ap)
             s = subprocess.getoutput(cmd)
         if not ((os.path.isfile(str(ap))) or (os.path.isfile(str(ap) + ".pub"))):
-            raise Exception("[!] RSA key pair generation failed.")
+            raise Exception("RSA key pair generation failed.")
         # Add private key the SSH agent
         cmd = "eval `ssh-agent`"
         s = subprocess.getoutput(cmd)
@@ -205,7 +212,7 @@ class Host(object):
         r = shell.copy(hostname=self.username, hostaddr=ip, password=self.password, keypath=(str(ap) + ".pub"))
         print(r)
         if "try logging" not in r:
-            raise Exception("[!] Failed to distribute SSH public key to host.")
+            raise Exception("Failed to distribute SSH public key to host.")
 
     def __str__(self):
         """
