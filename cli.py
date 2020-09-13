@@ -12,7 +12,8 @@ import traceback
 from cmd import Cmd
 from topo import Topology
 import atexit
-
+from print_colours import Print
+import logging
 
 class Console(Cmd):
     prompt = ">>> "
@@ -22,6 +23,9 @@ class Console(Cmd):
     def __init__(self):
         Cmd.__init__(self)
         self.topo = None
+        logging.basicConfig(level=logging.DEBUG,
+                            filename='avn.log',
+                            format='%(asctime)s, %(levelname)s, %(name)s, %(message)s')
 
         #Exit cleanup on keyboard interrupt
         atexit.register(self.do_destroy, "")
@@ -37,12 +41,12 @@ class Console(Cmd):
         build <template>
         """
         cmds = cmd.split()
-        if len(cmds) > 2:
-            print("[!] Invalid number of arguments, see 'help build'")
+        if len(cmds) > 1:
+            Print.print_warning("Invalid number of arguments, see 'help build'")
             return
 
         try:
-            print("Initialising network...")
+            Print.print_information("Initialising network...")
             if len(cmds) == 1:
                 self.topo = Topology(template_file=cmds[0])
             else:
@@ -59,6 +63,7 @@ class Console(Cmd):
         Initialise network.
         """
         try:
+            Print.print_information("Starting network...")
             self.topo.start()
         except Exception as e:
             handle_ex(e)
@@ -77,7 +82,7 @@ class Console(Cmd):
         # command validation
         cmds = cmd.split()
         if len(cmds) != 1:
-            print("[!] Invalid number of arguments, see 'help show'")
+            Print.print_warning("Invalid number of arguments, see 'help show'")
             return
         # command execution
         try:
@@ -100,11 +105,12 @@ class Console(Cmd):
             if none specified then sessions started with all.
         """
         # command validation
+        Print.print_information("Establishing shell...")
         cmds = cmd.split()
         vmname = "all"
         if len(cmds) == 1:
             vmname = cmds[0]
-        # command execution
+        # command executionint.print_information
         try:
             self.topo.shell(vmname)
         except Exception as e:
@@ -119,11 +125,12 @@ class Console(Cmd):
         Distribute SSH keys to hosts.
         """
         try:
+            Print.print_information("Distributing keys...")
             self.topo.send_keys()
         except Exception as e:
             handle_ex(e)
 
-    ############################################
+    ############################################int.print_information
     # Network Destroy
     ############################################
 
@@ -132,6 +139,7 @@ class Console(Cmd):
         Destroy the network.
         """
         try:
+            Print.print_information("Destroying network...")
             self.topo.destroy()
         except Exception as e:
             handle_ex(e)
@@ -156,10 +164,8 @@ class Console(Cmd):
 
 def handle_ex(exception):
     """Print exception and traceback."""
-    print("[!] Exception Error")
-    print(exception)
-    track = traceback.format_exc()
-    print(track)
+    logging.exception(exception)
+    Print.print_error(exception)
 
 ################################################################################
 # Main
