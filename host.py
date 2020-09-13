@@ -128,6 +128,12 @@ class Host(object):
         for nic in p["nics"].values():
             if nic["ip"] is not None:
                 return nic["ip"]
+    
+    def get_username(self): 
+        """
+        Return host username.
+        """
+        return self.username
 
     def start(self, headerless=True):
         """

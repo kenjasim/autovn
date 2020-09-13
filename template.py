@@ -1,6 +1,7 @@
 import yaml
 from network import Network
 from host import Host
+from groups import Group 
 
 class Template():
 
@@ -17,8 +18,8 @@ class Template():
         self.groups = {}
 
         # Read the template file
-        file = open(template_file)
-        self.template = yaml.safe_load(file)
+        with open(template_file) as file:
+            self.template = yaml.safe_load(file) 
 
     def parse(self):
         """
@@ -30,28 +31,11 @@ class Template():
         """
         # Read the network and host files
         self.read_networks()
+        self.read_groups() 
         self.read_hosts()
 
         # Return the lists
-        return self.networks, self.hosts
-
-    def read_groups(self):
-        """
-        Reads the network information from the template
-        """
-        # Read the hosts information and catch if it doesnt exist
-
-        if "groups" in self.template:
-            groups = self.template['groups']
-
-            # Loop through the hosts and collect the information
-            for group, values in group.items():
-                if "hostname" in values:
-                    self.groups[group] = values["hostname"]
-
-        else:
-            raise Exception("No group information in template")
-
+        return self.networks, self.groups, self.hosts
 
     def read_networks(self):
         """
@@ -69,6 +53,22 @@ class Template():
         else:
             raise Exception("No network information in template")
 
+    def read_groups(self):
+        """
+        Reads the network information from the template
+        """
+        # Read the hosts information and catch if it doesnt exist
+
+        if "groups" in self.template:
+            groups = self.template['groups']
+
+            # Create each group 
+            for groupname, values in groups.items():
+                self.groups[groupname] = Group(groupname, **values) 
+                
+        else:
+            raise Exception("[!] No group information in template")
+
     def read_hosts(self):
         """
         Reads the network information from the template
@@ -83,17 +83,24 @@ class Template():
                 if "image" and "username" and "password" and "networks" and "internet_access" in values:
                     self.hosts[host] = Host(host, values["image"], values["username"], values["password"])
 
+                    # Manage network assignments 
                     networks = values["networks"]
-
                     # Assign the network access if that is required
                     if values["internet_access"]:
                         networks.insert(0, "Internet")
                         self.hosts[host].assign_internet(1)
-
                     # Loop through rest of list and assign adapter
                     for index, network in enumerate(networks):
                         # Check if its in the list and that the addapters havent gone over 8
                         if network in networks and index + 1 < 8 and network != "Internet":
                             self.hosts[host].assign_network(index+1, self.networks[network].get_name())
+                    
+                    # Manage group assignments 
+                    groups = values["groups"]
+                    # For each group assign the host  
+                    for groupname in groups: 
+                        if groupname in self.groups.keys():
+                            group = self.groups[groupname]
+                            group.add_host(self.hosts[host])
         else:
             raise Exception("No host information in template")
