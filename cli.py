@@ -11,6 +11,8 @@ import time
 import traceback
 from cmd import Cmd
 from topo import Topology
+import atexit
+
 
 class Console(Cmd):
     prompt = ">>> "
@@ -20,6 +22,9 @@ class Console(Cmd):
     def __init__(self):
         Cmd.__init__(self)
         self.topo = None
+
+        #Exit cleanup on keyboard interrupt
+        atexit.register(self.do_destroy, "")
 
     ############################################
     # Build Network Topology
