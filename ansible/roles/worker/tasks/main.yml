@@ -1,3 +1,0 @@
-- name: change hostname to master
-  hostname:
-    name: worker

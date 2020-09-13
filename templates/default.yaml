@@ -26,21 +26,21 @@ hosts:
     groups:
       - host1
     internet_access: True
-  host2:
-    image: "vm_templates/Ubuntu Server 20.04.ova"
-    username: "dev"
-    password: "ved"
-    networks:
-      - hoif1
-    groups:
-      - host2
-    internet_access: True
-  host3:
-    image: "vm_templates/Ubuntu Server 20.04.ova"
-    username: "dev"
-    password: "ved"
-    networks:
-      - hoif1
-    groups:
-      - host3
-    internet_access: True
+  # host2:
+  #   image: "vm_templates/Ubuntu Server 20.04.ova"
+  #   username: "dev"
+  #   password: "ved"
+  #   networks:
+  #     - hoif1
+  #   groups:
+  #     - host2
+  #   internet_access: True
+  # host3:
+  #   image: "vm_templates/Ubuntu Server 20.04.ova"
+  #   username: "dev"
+  #   password: "ved"
+  #   networks:
+  #     - hoif1
+  #   groups:
+  #     - host3
+  #   internet_access: True
