@@ -1,7 +1,6 @@
 import yaml
 from network import Network
 from host import Host
-from groups import Group 
 
 class Template():
 
@@ -31,11 +30,10 @@ class Template():
         """
         # Read the network and host files
         self.read_networks()
-        self.read_groups() 
         self.read_hosts()
 
         # Return the lists
-        return self.networks, self.groups, self.hosts
+        return self.networks, self.hosts
 
     def read_networks(self):
         """
@@ -52,22 +50,6 @@ class Template():
                     self.networks[network] = Network(values["netaddr"], values["dhcplower"], values["dhcpupper"])
         else:
             raise Exception("[!] No network information in template")
-
-    def read_groups(self):
-        """
-        Reads the network information from the template
-        """
-        # Read the hosts information and catch if it doesnt exist
-
-        if "groups" in self.template:
-            groups = self.template['groups']
-
-            # Create each group 
-            for groupname, values in groups.items():
-                self.groups[groupname] = Group(groupname, **values) 
-                
-        else:
-            raise Exception("[!] No group information in template")
 
     def read_hosts(self):
         """

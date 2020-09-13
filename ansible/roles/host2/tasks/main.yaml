@@ -1,3 +1,0 @@
-- name: change hostname to host2
-  hostname:
-    name: worker
