@@ -100,7 +100,7 @@ class Topology():
             threads.append(t)
         # Wait for all threaded processes to complete
         for thread in threads:
-            thread.result()        
+            thread.result()
 
     def show_hosts(self):
         """
@@ -155,18 +155,6 @@ class Topology():
         """
         for host in self.hosts.values():
             host.dist_pkey()
-<<<<<<< HEAD
-
-    def deploy_config(self):
-        """
-        Automatically deploy group configurations to hosts using Ansible.
-        """
-        for group in self.groups.values():
-            group.create_ansible_role()
-            print(group)
-
-=======
->>>>>>> 63eb59bc65ad3a41dbc52c3b39cf221b7c06f4a7
 
 
 ################################################################################
