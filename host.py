@@ -204,7 +204,7 @@ class Host(object):
         if not ((os.path.isfile(str(ap))) or (os.path.isfile(str(ap) + ".pub"))):
             # Create RSA key pair
             cmd = "ssh-keygen -t rsa -b 4096 -q -N \"\" -f " + str(ap)
-            s = subprocess.getoutput(cmd)
+            subprocess.getoutput(cmd)
         if not ((os.path.isfile(str(ap))) or (os.path.isfile(str(ap) + ".pub"))):
             raise Exception("RSA key pair generation failed.")
         # Add private key the SSH agent
