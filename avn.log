@@ -50,3 +50,15 @@ Traceback (most recent call last):
   File "/home/kenan/Documents/AutoVN/network.py", line 151, in destroy
     Print.print_success("Destroyed network ")
 TypeError: can only concatenate str (not "NoneType") to str
+2020-09-13 13:55:31,588, ERROR, root, Failed to find the file.yeusaygusyag
+Traceback (most recent call last):
+  File "/home/kenan/Documents/AutoVN/cli.py", line 47, in do_build
+    self.topo = Topology(template_file=cmds[0])
+  File "/home/kenan/Documents/AutoVN/topo.py", line 32, in __init__
+    raise Exception("Failed to find the file." + template_file)
+Exception: Failed to find the file.yeusaygusyag
+2020-09-13 13:55:49,223, ERROR, root, 'NoneType' object has no attribute 'destroy'
+Traceback (most recent call last):
+  File "/home/kenan/Documents/AutoVN/cli.py", line 152, in do_destroy
+    self.topo.destroy()
+AttributeError: 'NoneType' object has no attribute 'destroy'

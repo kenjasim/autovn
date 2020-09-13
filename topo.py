@@ -29,7 +29,7 @@ class Topology():
         if (os.path.isfile(template_file)):
             self.networks, self.groups, self.hosts = Template(template_file).parse()
         else:
-            raise Exception("Failed to find the file." + template_file)
+            raise Exception("Failed to find the file " + template_file)
 
     def start(self):
         """
@@ -155,7 +155,7 @@ class Topology():
         """
         for host in self.hosts.values():
             host.dist_pkey()
-    
+
     def deploy_config(self):
         """
         Automatically deploy group configurations to hosts using Ansible.
