@@ -10,6 +10,7 @@ import traceback
 from network import Network
 from host import Host
 from template import Template
+from print_colours import Print
 
 class Topology():
     """
@@ -28,7 +29,7 @@ class Topology():
         if (os.path.isfile(template_file)):
             self.networks, self.groups, self.hosts = Template(template_file).parse()
         else:
-            raise Exception("[!] Failed to find the file." + template_file)
+            raise Exception("Failed to find the file." + template_file)
 
     def start(self):
         """
@@ -59,7 +60,7 @@ class Topology():
                 if host.get_ip():
                     hosts.remove(host)
         if len(hosts) > 0:
-            print("[!] Timeout, IP addresses not yet assigned.")
+            Print.print_warning("Timeout, IP addresses not yet assigned.")
 
     def stop(self):
         """
@@ -145,7 +146,7 @@ class Topology():
             for host in self.hosts.values():
                 host.ssh()
         else:
-            raise Exception("[!] Unknown vmname entered.")
+            raise Exception("Unknown vmname entered.")
 
     def send_keys(self):
         """

@@ -51,7 +51,7 @@ class Template():
                 if "netaddr" and "dhcplower" and "dhcpupper" in values:
                     self.networks[network] = Network(values["netaddr"], values["dhcplower"], values["dhcpupper"])
         else:
-            raise Exception("[!] No network information in template")
+            raise Exception("No network information in template")
 
     def read_groups(self):
         """
@@ -103,4 +103,4 @@ class Template():
                             group = self.groups[groupname]
                             group.add_host(self.hosts[host])
         else:
-            raise Exception("[!] No host information in template")
+            raise Exception("No host information in template")

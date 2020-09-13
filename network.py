@@ -5,6 +5,8 @@ import re
 import time
 import sys
 
+from print_colours import Print
+
 
 class Network(object):
 
@@ -48,7 +50,7 @@ class Network(object):
             # Linux config location ~/.config/VirtualBox/...
             path = Path.home().glob('.config' + '/VirtualBox' + '/HostInterfaceNetworking-' + netname + '-Dhcpd.leases')
         else:
-            raise Exception("[!] OS not supported")
+            raise Exception("OS not supported")
 
         for filepath in path:
             # create element tree object
@@ -91,12 +93,12 @@ class Network(object):
         """
         # Check if network name is avaliable
         if self.check_exists(self.netname):
-            raise Exception("[!] Network with name " + self.netname + " already exists.")
+            raise Exception("Network with name " + self.netname + " already exists.")
         # Create host-only network interface
         subprocess.getoutput("VBoxManage hostonlyif create")
         # Check if network has been created
         if not self.check_exists(self.netname):
-            raise Exception("[!] Failed to create network with name " + self.netname)
+            raise Exception("Failed to create network with name " + self.netname)
         # Set IP address of the host-only network interface
         cmd = 'VBoxManage hostonlyif ipconfig ' + self.netname + ' --ip ' + self.netaddr
         subprocess.getoutput(cmd)
@@ -110,6 +112,7 @@ class Network(object):
         # Enable the server
         cmd = 'VBoxManage dhcpserver modify --ifname '+ self.netname +' --enable'
         subprocess.getoutput(cmd)
+        Print.print_success("Created network " + self.netname)
 
     def reset_dhcp(self):
         # Enable the server
@@ -135,7 +138,7 @@ class Network(object):
             # Linux config location ~/.config/VirtualBox/...
             path = Path.home().glob('.config' + '/VirtualBox' + '/HostInterfaceNetworking-' + self.netname + '-Dhcpd.*')
         else:
-            raise Exception("[!] OS not supported")
+            raise Exception("OS not supported")
         for filepath in path:
             cmd = 'rm ' + str(filepath)
             subprocess.getoutput(cmd)
@@ -145,6 +148,7 @@ class Network(object):
         # Set network object properties to None (indicate deleted)
         self.netname = None
         self.netaddr = None
+        Print.print_success("Destroyed network ")
 
 
 ################################################################################

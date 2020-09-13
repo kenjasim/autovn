@@ -6,3 +6,6 @@ keys/*
 
 # VM Images
 *.ova
+
+# Log
+*.log
