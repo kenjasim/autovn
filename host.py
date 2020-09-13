@@ -209,7 +209,7 @@ class Host(object):
             raise Exception("RSA key pair generation failed.")
         # Add private key the SSH agent
         cmd = "eval `ssh-agent`"
-        s = subprocess.getoutput(cmd)
+        subprocess.getoutput(cmd)
         cmd = "ssh-add " + str(ap)
         s = subprocess.getoutput(cmd)
         # Share public key with host
