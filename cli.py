@@ -11,6 +11,7 @@ import time
 import traceback
 from cmd import Cmd
 from topo import Topology
+import atexit
 from print_colours import Print
 import logging
 
@@ -25,6 +26,9 @@ class Console(Cmd):
         logging.basicConfig(level=logging.DEBUG,
                             filename='avn.log',
                             format='%(asctime)s, %(levelname)s, %(name)s, %(message)s')
+
+        #Exit cleanup on keyboard interrupt
+        atexit.register(self.do_destroy, "")
 
     ############################################
     # Build Network Topology
@@ -123,19 +127,6 @@ class Console(Cmd):
         try:
             Print.print_information("Distributing keys...")
             self.topo.send_keys()
-        except Exception as e:
-            handle_ex(e)
-    
-    ############################################
-    # Deploy group configurations to hosts 
-    ############################################
-
-    def do_config(self, cmd):
-        """
-        Deploy group configurations to hosts.
-        """
-        try:
-            self.topo.deploy_config() 
         except Exception as e:
             handle_ex(e)
 
