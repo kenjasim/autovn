@@ -7,10 +7,12 @@ import xml.etree.ElementTree as ET
 from tabulate import tabulate
 import traceback
 
-from network import Network
-from host import Host
+from models.network import Network
+from models.host import Host
 from template import Template
 from print_colours import Print
+
+from sqlalchemy import create_engine
 
 class Topology():
     """
@@ -30,6 +32,9 @@ class Topology():
             self.networks, self.hosts = Template(template_file).parse()
         else:
             raise Exception("Failed to find the file " + template_file)
+        # create sql engine 
+        engine = create_engine('sqlite:///:memory:', echo=True)
+        
 
     def start(self):
         """

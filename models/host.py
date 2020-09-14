@@ -3,10 +3,12 @@ import subprocess
 import re
 import os
 import time
-from network import Network
+from models.network import Network
 from tabulate import tabulate
 from autossh import ssh_shell
 from print_colours import Print
+
+from sqlalchemy import create_engine
 
 class Host(object):
 
@@ -199,7 +201,7 @@ class Host(object):
         Create and distribute SSH keys for/to the host.
         """
         keyname = "id_rsa_vb"
-        ap = Path(__file__).parent.absolute() / "keys" / keyname
+        ap = Path().parent.absolute() / "keys" / keyname
         # Check if key already exists
         if not ((os.path.isfile(str(ap))) or (os.path.isfile(str(ap) + ".pub"))):
             # Create RSA key pair
@@ -211,7 +213,7 @@ class Host(object):
         cmd = "eval `ssh-agent`"
         subprocess.getoutput(cmd)
         cmd = "ssh-add " + str(ap)
-        s = subprocess.getoutput(cmd)
+        subprocess.getoutput(cmd)
         # Share public key with host
         shell = ssh_shell.Shell()
         ip = self.get_ip()

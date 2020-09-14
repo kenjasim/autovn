@@ -1,14 +1,14 @@
 import yaml
-from network import Network
-from host import Host
+from models.network import Network
+from models.host import Host
 
 class Template():
 
     def __init__(self, template_file):
         """
-        Parse and return the hosts and networks from the template file
+        Parse and return the hosts and networks from the template file.
 
-        Keyword Arguments
+        Keyword Arguments:
             template_file - The yaml template file to read
         """
         # Generate the network
@@ -22,9 +22,9 @@ class Template():
 
     def parse(self):
         """
-        Parse the network template
+        Parse the network template.
 
-        Returns
+        Returns:
             network - Dictionary of created networks
             hosts - dictionary of created hosts
         """
@@ -37,7 +37,7 @@ class Template():
 
     def read_networks(self):
         """
-        Reads the network information from the template
+        Reads the network information from the template.
         """
         # Read the network information and catch if it doesnt exist
 
@@ -53,7 +53,7 @@ class Template():
 
     def read_hosts(self):
         """
-        Reads the network information from the template
+        Reads the network information from the template.
         """
         # Read the hosts information and catch if it doesnt exist
 
@@ -76,13 +76,5 @@ class Template():
                         # Check if its in the list and that the addapters havent gone over 8
                         if network in networks and index + 1 < 8 and network != "Internet":
                             self.hosts[host].assign_network(index+1, self.networks[network].get_name())
-                    
-                    # Manage group assignments 
-                    groups = values["groups"]
-                    # For each group assign the host  
-                    for groupname in groups: 
-                        if groupname in self.groups.keys():
-                            group = self.groups[groupname]
-                            group.add_host(self.hosts[host])
         else:
             raise Exception("No host information in template")

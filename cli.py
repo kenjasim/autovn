@@ -10,7 +10,7 @@ import re
 import time
 import traceback
 from cmd import Cmd
-from topo import Topology
+from models.topo import Topology
 import atexit
 from print_colours import Print
 import logging
@@ -36,9 +36,9 @@ class Console(Cmd):
 
     def do_build(self, cmd):
         """
-        Initialise network. Leave template blank for default k8 configuration
-
-        build <template>
+        Initialise network. Leave template blank for default 3h-1n config.
+        
+        build <path-to-template>
         """
         cmds = cmd.split()
         if len(cmds) > 1:
@@ -153,9 +153,9 @@ class Console(Cmd):
         exit the application
         """
         # Destroy network
-        a = input("Destroy the network before exiting application (y/n):")
-        if a == 'y':
-            self.do_destroy("")
+        a = input("Exiting will destroy the network, continue (y/n):")
+        if a == 'n':
+            return
         return True
 
 ################################################################################
