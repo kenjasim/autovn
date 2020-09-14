@@ -8,9 +8,23 @@ from tabulate import tabulate
 from autossh import ssh_shell
 from print_colours import Print
 
-from sqlalchemy import create_engine
+# Create ObjectRelationalModel (ORM) base class 
+from sqlalchemy import Column, Integer, String, Sequence
+from .db import Base
 
-class Host(object):
+
+class Host(Base):
+    # Define 'hosts' SQL table for instances of Host 
+    __tablename__ = 'hosts'
+    id = Column(Integer, Sequence('host_id_seq'), primary_key=True)
+    vmname = Column(String, unique=True) 
+    image = Column(String) 
+    username = Column(String) 
+    password = Column(String) 
+
+    def __repr__(self):
+        return "<Host(vmname='%s', image='%s', username='%s', password='%s')>" % (
+            self.vmname, self.image, self.username, self.password)
 
     def __init__(self, vmname, image, username, password):
         """
@@ -32,6 +46,7 @@ class Host(object):
             raise Exception("VM image with assigned name already exists")
         # Import image into VirtualBox
         self.import_image()
+        
 
     @classmethod
     def check_exists(self, vmname):
@@ -181,7 +196,8 @@ class Host(object):
         # Delete virtual machine from VirtualBox
         cmd = 'VBoxManage unregistervm --delete ' + self.vmname
         subprocess.getoutput(cmd)
-
+        # Delete database entry 
+        ####
         Print.print_success("Destroyed machine " + self.vmname)
 
     def ssh(self):
@@ -218,9 +234,10 @@ class Host(object):
         shell = ssh_shell.Shell()
         ip = self.get_ip()
         r = shell.copy(hostname=self.username, hostaddr=ip, password=self.password, keypath=(str(ap) + ".pub"))
-        print(r)
         if "try logging" not in r:
             raise Exception("Failed to distribute SSH public key to host.")
+        else: 
+            Print.print_success("SSH key distributed to host " + self.vmname + "@" + self.get_ip())
 
     def __str__(self):
         """

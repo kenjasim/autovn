@@ -28,7 +28,7 @@ class Console(Cmd):
                             format='%(asctime)s, %(levelname)s, %(name)s, %(message)s')
 
         #Exit cleanup on keyboard interrupt
-        atexit.register(self.do_destroy, "")
+        atexit.register(self.do_exit, "")
 
     ############################################
     # Build Network Topology
@@ -153,9 +153,9 @@ class Console(Cmd):
         exit the application
         """
         # Destroy network
-        a = input("Exiting will destroy the network, continue (y/n):")
-        if a == 'n':
-            return
+        a = input("Destroy the network before exiting (y/n):")
+        if a == 'y':
+            self.do_destroy("") 
         return True
 
 ################################################################################

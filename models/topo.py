@@ -9,10 +9,12 @@ import traceback
 
 from models.network import Network
 from models.host import Host
-from template import Template
+from constructor import Constructor
 from print_colours import Print
 
-from sqlalchemy import create_engine
+from models.db import create_tables
+from models.db import close_database
+from models.db import Session
 
 class Topology():
     """
@@ -27,14 +29,13 @@ class Topology():
         Keyword Arguments:
             template_file - path to the yaml file to read
         """
+        # Create SQL tables for networks and hosts 
+        create_tables()
         # Check if the file exits, if not then raise an exception
         if (os.path.isfile(template_file)):
-            self.networks, self.hosts = Template(template_file).parse()
+            self.networks, self.hosts = Constructor(template_file).parse()
         else:
-            raise Exception("Failed to find the file " + template_file)
-        # create sql engine 
-        engine = create_engine('sqlite:///:memory:', echo=True)
-        
+            raise Exception("Failed to find the file " + template_file)  
 
     def start(self):
         """
@@ -86,6 +87,8 @@ class Topology():
         """
         Permanently delete all virtual machines and networks.
         """
+        # Close database 
+        close_database()
         # Ensure all virtual machines are powered down
         self.stop()
         # Start the thread executor
@@ -106,6 +109,10 @@ class Topology():
         # Wait for all threaded processes to complete
         for thread in threads:
             thread.result()
+        # Destroy database 
+        datapath = Path(__file__).parent.absolute() / "data.db"
+        if os.path.isfile(str(datapath)):
+            os.remove(str(datapath))
 
     def show_hosts(self):
         """
