@@ -14,25 +14,27 @@ class Network(Base):
     # Define 'network' SQL table for instances of Host 
     __tablename__ = 'networks'
     id = Column(Integer, Sequence('network_id_seq'), primary_key=True)
+    label = Column(String, unique=True) 
     netname = Column(String, unique=True) 
     netaddr = Column(String) 
     dhcplower = Column(String) 
     dhcpupper = Column(String) 
 
     def __repr__(self):
-        return "<Network(netname='%s', netaddr='%s', dhcplower='%s', dhcpupper='%s')>" % (
-            self.netname, self.netaddr, self.dhcplower, self.dhcpupper)
+        return "<Network(label='%s', netname='%s', netaddr='%s', dhcplower='%s', dhcpupper='%s')>" % (
+            self.label, self.netname, self.netaddr, self.dhcplower, self.dhcpupper)
 
-    def __init__(self, netaddr, dhcplower, dhcpupper):
+    def __init__(self, label, netaddr, dhcplower, dhcpupper):
         """
         Initialises VirtualBox host-only network interface
         Options:
             label: user defined label to identify network interface
-            hostname: name of host only interface
+            netname: name of host only interface
             hostaddr: address of the interface
             dhcplower: Lower range of assignable ip addresses
             dhcpupper: Upper range of assignable ip addresses
         """
+        self.label = label
         self.netname = self.next_name() # recieve name from VirtualBox
         self.netaddr = netaddr
         self.dhcplower = dhcplower

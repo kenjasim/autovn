@@ -84,12 +84,10 @@ class Topology():
         """
         Permanently delete all virtual machines and networks.
         """
-        # Close database 
-        close_database()
         # Ensure all virtual machines are powered down
         self.stop()
         # Start the thread executor
-        executor = ThreadPoolExecutor(max_workers=5)
+        executor = ThreadPoolExecutor(max_workers=len(self.hosts.keys()))
         threads = []
         # Assign each host destroy command to a thread
         for host in self.hosts.values():
@@ -98,24 +96,28 @@ class Topology():
         # Wait for all threaded processes to complete
         for thread in threads:
             thread.result()
+        executor.shutdown(wait=True) 
         # Delete host database entry 
         for host in self.hosts.values():
             Session.delete(host)
             Session.commit() 
-        # Assign each network destroy command to a thread
+        # Start the thread executor
+        executor = ThreadPoolExecutor(max_workers=len(self.networks.keys()))
         threads = []
+        # Assign each network destroy command to a thread
         for network in self.networks.values():
             t = executor.submit(network.destroy)
             threads.append(t)
         # Wait for all threaded processes to complete
         for thread in threads:
             thread.result()
+        executor.shutdown(wait=True) 
         # Delete network database entry 
         for network in self.networks.values():
             Session.delete(network)
             Session.commit()
         # Destroy database 
-        datapath = Path(__file__).parent.absolute() / tmp / "data.db"
+        datapath = Path().parent.absolute() / "tmp" / "data.db"
         if os.path.isfile(str(datapath)):
             os.remove(str(datapath))
 

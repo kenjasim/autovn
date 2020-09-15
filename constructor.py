@@ -52,19 +52,19 @@ class Constructor():
             networks = self.template['networks']
 
             # Loop through the networks and collect the information
-            for netname, values in networks.items():
+            for label, values in networks.items():
                 network = None
                 # Check if host already exists in database 
-                network = Session.query(Network).filter_by(netname=netname).first() 
+                network = Session.query(Network).filter_by(label=label).first() 
                 if network is not None:
-                    self.networks[netname] = network
+                    self.networks[label] = network
                 else:
                     # Else, create network 
                     if "netaddr" and "dhcplower" and "dhcpupper" in values:
-                        self.networks[netname] = Network(values["netaddr"], values["dhcplower"], values["dhcpupper"])
+                        self.networks[label] = Network(label, values["netaddr"], values["dhcplower"], values["dhcpupper"])
                         # Save network to the database 
-                        Session.add(self.networks[netname])
-                        Session.commit()
+                        Session.add(self.networks[label])
+                        Session.commit() 
         else:
             raise Exception("No network information in template")
 
@@ -96,10 +96,10 @@ class Constructor():
                             networks.insert(0, "Internet")
                             self.hosts[vmname].assign_internet(1)
                         # Loop through rest of list and assign adapter
-                        for index, network in enumerate(networks):
-                            # Check if its in the list and that the addapters havent gone over 8
-                            if network in networks and index + 1 < 8 and network != "Internet":
-                                self.hosts[vmname].assign_network(index+1, self.networks[network].get_name())
+                        for index, networklabel in enumerate(networks):
+                            # Check if its in the list and that the adapters havent gone over 8
+                            if networklabel in networks and index + 1 < 8 and networklabel != "Internet":
+                                self.hosts[vmname].assign_network(index+1, self.networks[networklabel].get_name())
                         # Save hosts to the database 
                         Session.add(self.hosts[vmname])
                         Session.commit() 
