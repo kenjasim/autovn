@@ -12,9 +12,8 @@ from models.host import Host
 from constructor import Constructor
 from print_colours import Print
 
-from models.db import create_tables
-from models.db import close_database
 from models.db import Session
+from models.db import close_database
 
 class Topology():
     """
@@ -29,8 +28,6 @@ class Topology():
         Keyword Arguments:
             template_file - path to the yaml file to read
         """
-        # Create SQL tables for networks and hosts 
-        create_tables()
         # Check if the file exits, if not then raise an exception
         if (os.path.isfile(template_file)):
             self.networks, self.hosts = Constructor(template_file).parse()
@@ -101,6 +98,10 @@ class Topology():
         # Wait for all threaded processes to complete
         for thread in threads:
             thread.result()
+        # Delete host database entry 
+        for host in self.hosts.values():
+            Session.delete(host)
+            Session.commit() 
         # Assign each network destroy command to a thread
         threads = []
         for network in self.networks.values():
@@ -109,6 +110,10 @@ class Topology():
         # Wait for all threaded processes to complete
         for thread in threads:
             thread.result()
+        # Delete network database entry 
+        for network in self.networks.values():
+            Session.delete(network)
+            Session.commit()
         # Destroy database 
         datapath = Path(__file__).parent.absolute() / "data.db"
         if os.path.isfile(str(datapath)):

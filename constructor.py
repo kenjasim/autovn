@@ -4,6 +4,7 @@ from models.host import Host
 
 from models.db import Session
 from sqlalchemy.exc import OperationalError
+from models.db import create_tables
 
 class Constructor():
 
@@ -18,6 +19,9 @@ class Constructor():
         self.networks = {}
         self.hosts = {}
         self.groups = {}
+
+        # Create SQL tables for networks and hosts 
+        create_tables()
 
         # Read the template file
         with open(template_file) as file:

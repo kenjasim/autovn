@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 Base = declarative_base()
 Session = scoped_session(sessionmaker()) 
 # Create sql engine 
-engine = create_engine('sqlite:///data.db', echo=False)
+engine = create_engine('sqlite:///tmp/data.db', echo=False, connect_args={'check_same_thread': False})
 
 def bind_engine(engine):
     Base.metadata.bind = engine

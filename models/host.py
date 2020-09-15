@@ -11,7 +11,7 @@ from print_colours import Print
 # Create ObjectRelationalModel (ORM) base class 
 from sqlalchemy import Column, Integer, String, Sequence
 from .db import Base
-
+from .db import Session
 
 class Host(Base):
     # Define 'hosts' SQL table for instances of Host 
@@ -196,8 +196,7 @@ class Host(Base):
         # Delete virtual machine from VirtualBox
         cmd = 'VBoxManage unregistervm --delete ' + self.vmname
         subprocess.getoutput(cmd)
-        # Delete database entry 
-        ####
+        # Show status 
         Print.print_success("Destroyed machine " + self.vmname)
 
     def ssh(self):
@@ -237,7 +236,7 @@ class Host(Base):
         if "try logging" not in r:
             raise Exception("Failed to distribute SSH public key to host.")
         else: 
-            Print.print_success("SSH key distributed to host " + self.vmname + "@" + self.get_ip())
+            Print.print_success("SSH key distributed to host " + self.vmname + " at " + self.username + "@" + self.get_ip())
 
     def __str__(self):
         """
