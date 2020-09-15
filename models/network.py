@@ -6,19 +6,19 @@ import time
 import sys
 from print_colours import Print
 
-# Create ObjectRelationalModel (ORM) base class 
+# Create ObjectRelationalModel (ORM) base class
 from sqlalchemy import Column, Integer, String, Sequence
-from .db import Base
+from db import Base
 
 class Network(Base):
-    # Define 'network' SQL table for instances of Host 
+    # Define 'network' SQL table for instances of Host
     __tablename__ = 'networks'
     id = Column(Integer, Sequence('network_id_seq'), primary_key=True)
-    label = Column(String, unique=True) 
-    netname = Column(String, unique=True) 
-    netaddr = Column(String) 
-    dhcplower = Column(String) 
-    dhcpupper = Column(String) 
+    label = Column(String, unique=True)
+    netname = Column(String, unique=True)
+    netaddr = Column(String)
+    dhcplower = Column(String)
+    dhcpupper = Column(String)
 
     def __repr__(self):
         return "<Network(label='%s', netname='%s', netaddr='%s', dhcplower='%s', dhcpupper='%s')>" % (
@@ -164,7 +164,7 @@ class Network(Base):
         self.netname = None
         self.netaddr = None
         Print.print_success("Destroyed network ")
-        # Delete database entry 
+        # Delete database entry
         ####
 
 

@@ -8,19 +8,19 @@ from tabulate import tabulate
 from autossh import ssh_shell
 from print_colours import Print
 
-# Create ObjectRelationalModel (ORM) base class 
+# Create ObjectRelationalModel (ORM) base class
 from sqlalchemy import Column, Integer, String, Sequence
-from .db import Base
-from .db import Session
+from db import Base
+from db import Session
 
 class Host(Base):
-    # Define 'hosts' SQL table for instances of Host 
+    # Define 'hosts' SQL table for instances of Host
     __tablename__ = 'hosts'
     id = Column(Integer, Sequence('host_id_seq'), primary_key=True)
-    vmname = Column(String, unique=True) 
-    image = Column(String) 
-    username = Column(String) 
-    password = Column(String) 
+    vmname = Column(String, unique=True)
+    image = Column(String)
+    username = Column(String)
+    password = Column(String)
 
     def __repr__(self):
         return "<Host(vmname='%s', image='%s', username='%s', password='%s')>" % (
@@ -46,7 +46,7 @@ class Host(Base):
             raise Exception("VM image with assigned name already exists")
         # Import image into VirtualBox
         self.import_image()
-        
+
 
     @classmethod
     def check_exists(self, vmname):
@@ -145,8 +145,8 @@ class Host(Base):
         for nic in p["nics"].values():
             if nic["ip"] is not None:
                 return nic["ip"]
-    
-    def get_username(self): 
+
+    def get_username(self):
         """
         Return host username.
         """
@@ -196,7 +196,7 @@ class Host(Base):
         # Delete virtual machine from VirtualBox
         cmd = 'VBoxManage unregistervm --delete ' + self.vmname
         subprocess.getoutput(cmd)
-        # Show status 
+        # Show status
         Print.print_success("Destroyed machine " + self.vmname)
 
     def ssh(self):
@@ -235,7 +235,7 @@ class Host(Base):
         r = shell.copy(hostname=self.username, hostaddr=ip, password=self.password, keypath=(str(ap) + ".pub"))
         if "try logging" not in r:
             raise Exception("Failed to distribute SSH public key to host.")
-        else: 
+        else:
             Print.print_success("SSH key distributed to host " + self.vmname + " at " + self.username + "@" + self.get_ip())
 
     def __str__(self):
@@ -254,6 +254,21 @@ class Host(Base):
             data.append(row)
         s += tabulate(data, header,tablefmt="fancy_grid")
         return s
+
+    def dict(self):
+        """
+        Return an ordered dictionary for printing purposes
+        """
+        # Get the dict and organised keys
+        dict = self.__dict__
+        keys = ["id", "vmname", "image", "username", "password"]
+
+        # Create and return a new dictionary
+        new_dict= {}
+        for key in keys:
+            new_dict[key] = dict[key]
+
+        return new_dict
 
 
 ################################################################################

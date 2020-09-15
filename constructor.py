@@ -3,9 +3,9 @@ from models.network import Network
 from models.host import Host
 
 from print_colours import Print
-from models.db import Session
 from sqlalchemy.exc import OperationalError
-from models.db import create_tables
+
+from db import Session, create_tables
 
 class Constructor():
 
@@ -21,12 +21,12 @@ class Constructor():
         self.hosts = {}
         self.groups = {}
 
-        # Create SQL tables for networks and hosts 
+        # Create SQL tables for networks and hosts
         create_tables()
 
         # Read the template file
         with open(template_file) as file:
-            self.template = yaml.safe_load(file) 
+            self.template = yaml.safe_load(file)
 
     def parse(self):
         """
@@ -55,18 +55,18 @@ class Constructor():
             # Loop through the networks and collect the information
             for label, values in networks.items():
                 network = None
-                # Check if host already exists in database 
-                network = Session.query(Network).filter_by(label=label).first() 
+                # Check if host already exists in database
+                network = Session.query(Network).filter_by(label=label).first()
                 if network is not None:
                     self.networks[label] = network
                     Print.print_success("Successfully imported existing network " + label + "from the database")
                 else:
-                    # Else, create network 
+                    # Else, create network
                     if "netaddr" and "dhcplower" and "dhcpupper" in values:
                         self.networks[label] = Network(label, values["netaddr"], values["dhcplower"], values["dhcpupper"])
-                        # Save network to the database 
+                        # Save network to the database
                         Session.add(self.networks[label])
-                        Session.commit() 
+                        Session.commit()
         else:
             raise Exception("No network information in template")
 
@@ -82,17 +82,17 @@ class Constructor():
             # Loop through the hosts and collect the information
             for vmname, values in hosts.items():
                 host = None
-                # Check if host already exists in database 
-                host = Session.query(Host).filter_by(vmname=vmname).first() 
+                # Check if host already exists in database
+                host = Session.query(Host).filter_by(vmname=vmname).first()
                 if host is not None:
                     self.hosts[vmname] = host
                     Print.print_success("Successfully imported existing host " + vmname + "from the database")
                 else:
-                    # Else, create host 
+                    # Else, create host
                     if "image" and "username" and "password" and "networks" and "internet_access" in values:
                         self.hosts[vmname] = Host(vmname, values["image"], values["username"], values["password"])
 
-                        # Manage network assignments 
+                        # Manage network assignments
                         networks = values["networks"]
                         # Assign the network access if that is required
                         if values["internet_access"]:
@@ -103,8 +103,8 @@ class Constructor():
                             # Check if its in the list and that the adapters havent gone over 8
                             if networklabel in networks and index + 1 < 8 and networklabel != "Internet":
                                 self.hosts[vmname].assign_network(index+1, self.networks[networklabel].get_name())
-                        # Save hosts to the database 
+                        # Save hosts to the database
                         Session.add(self.hosts[vmname])
-                        Session.commit() 
+                        Session.commit()
         else:
             raise Exception("No host information in template")
