@@ -12,27 +12,24 @@ from models.host import Host
 from constructor import Constructor
 from print_colours import Print
 
-from models.db import Session
-from models.db import close_database
+from db import Session
+from db import close_database
 
 class Topology():
     """
     Launch a network toplogy using VirtualBox
     """
 
-    def __init__(self, template_file="templates/default.yaml"):
+    def build(self, template_file="templates/default.yaml"):
         """
         Read a yaml configuration file to get the network required and then
         initialise the network
-
-        Keyword Arguments:
-            template_file - path to the yaml file to read
         """
         # Check if the file exits, if not then raise an exception
         if (os.path.isfile(template_file)):
             self.networks, self.hosts = Constructor(template_file).parse()
         else:
-            raise Exception("Failed to find the file " + template_file)  
+            raise Exception("Failed to find the file " + template_file)
 
     def start(self):
         """
@@ -96,11 +93,11 @@ class Topology():
         # Wait for all threaded processes to complete
         for thread in threads:
             thread.result()
-        executor.shutdown(wait=True) 
-        # Delete host database entry 
+        executor.shutdown(wait=True)
+        # Delete host database entry
         for host in self.hosts.values():
             Session.delete(host)
-            Session.commit() 
+            Session.commit()
         # Start the thread executor
         executor = ThreadPoolExecutor(max_workers=len(self.networks.keys()))
         threads = []
@@ -111,12 +108,12 @@ class Topology():
         # Wait for all threaded processes to complete
         for thread in threads:
             thread.result()
-        executor.shutdown(wait=True) 
-        # Delete network database entry 
+        executor.shutdown(wait=True)
+        # Delete network database entry
         for network in self.networks.values():
             Session.delete(network)
             Session.commit()
-        # Destroy database 
+        # Destroy database
         datapath = Path().parent.absolute() / "tmp" / "data.db"
         if os.path.isfile(str(datapath)):
             os.remove(str(datapath))
@@ -166,6 +163,13 @@ class Topology():
                 host.ssh()
         else:
             raise Exception("Unknown vmname entered.")
+
+    def get_hosts(self):
+        """
+        Return a list of hosts.
+        """
+        return list(self.hosts.values())
+
 
     def send_keys(self):
         """

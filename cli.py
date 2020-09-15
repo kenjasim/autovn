@@ -14,6 +14,8 @@ from models.topo import Topology
 import atexit
 from print_colours import Print
 import logging
+from restapi.server import RESTServer
+import multiprocessing
 
 class Console(Cmd):
     prompt = ">>> "
@@ -23,6 +25,7 @@ class Console(Cmd):
     def __init__(self):
         Cmd.__init__(self)
         self.topo = None
+        self.server = None
         logging.basicConfig(level=logging.DEBUG,
                             filename='avn.log',
                             format='%(asctime)s, %(levelname)s, %(name)s, %(message)s')
@@ -37,7 +40,7 @@ class Console(Cmd):
     def do_build(self, cmd):
         """
         Initialise network. Leave template blank for default 3h-1n config.
-        
+
         build <path-to-template>
         """
         cmds = cmd.split()
@@ -48,9 +51,11 @@ class Console(Cmd):
         try:
             Print.print_information("Initialising topology...")
             if len(cmds) == 1:
-                self.topo = Topology(template_file=cmds[0])
+                self.topo = Topology()
+                self.topo.build(template_file=cmds[0])
             else:
                 self.topo = Topology()
+                self.topo.build()
         except Exception as e:
             handle_ex(e)
 
@@ -130,7 +135,22 @@ class Console(Cmd):
         except Exception as e:
             handle_ex(e)
 
-    ############################################int.print_information
+    ############################################
+    # Launch RestAPI Server
+    ############################################
+
+    def do_server(self, cmd):
+        """
+        Launch the RestAPI Server.
+        """
+        try:
+            Print.print_information("Starting RestAPI server...")
+            self.server = RESTServer()
+            self.server.start()
+        except Exception as e:
+            handle_ex(e)
+
+    ############################################
     # Network Destroy
     ############################################
 
@@ -140,7 +160,10 @@ class Console(Cmd):
         """
         try:
             Print.print_information("Destroying network...")
+            # if self.server:
+            #     self.server.stop()
             self.topo.destroy()
+            self.topo = None
         except Exception as e:
             handle_ex(e)
 
@@ -150,13 +173,17 @@ class Console(Cmd):
 
     def do_exit(self, cmd):
         """
-        exit the application
+        Exit the application
         """
-        # Destroy network
-        a = input("Destroy the network before exiting (y/n):")
-        if a == 'y':
-            self.do_destroy("") 
+        if self.topo:
+            # Destroy network
+            a = input("Destroy the network before exiting (y/n):")
+            if a == 'y':
+                self.do_destroy("")
+        if self.server:
+            self.server.stop()
         return True
+
 
 ################################################################################
 # CLI Exception handler
