@@ -2,6 +2,7 @@ import yaml
 from models.network import Network
 from models.host import Host
 
+from print_colours import Print
 from models.db import Session
 from sqlalchemy.exc import OperationalError
 from models.db import create_tables
@@ -58,6 +59,7 @@ class Constructor():
                 network = Session.query(Network).filter_by(label=label).first() 
                 if network is not None:
                     self.networks[label] = network
+                    Print.print_success("Successfully imported existing network " + label + "from the database")
                 else:
                     # Else, create network 
                     if "netaddr" and "dhcplower" and "dhcpupper" in values:
@@ -84,6 +86,7 @@ class Constructor():
                 host = Session.query(Host).filter_by(vmname=vmname).first() 
                 if host is not None:
                     self.hosts[vmname] = host
+                    Print.print_success("Successfully imported existing host " + vmname + "from the database")
                 else:
                     # Else, create host 
                     if "image" and "username" and "password" and "networks" and "internet_access" in values:

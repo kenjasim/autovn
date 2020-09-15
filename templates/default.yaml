@@ -9,6 +9,14 @@ networks:
     netaddr: "30.0.0.1"
     dhcplower: "30.0.0.2"
     dhcpupper: "30.0.0.254"
+  hoif3:
+    netaddr: "40.0.0.1"
+    dhcplower: "40.0.0.2"
+    dhcpupper: "40.0.0.254"
+  hoif4:
+    netaddr: "50.0.0.1"
+    dhcplower: "50.0.0.2"
+    dhcpupper: "50.0.0.254"
 
 #Hosts Configuration
 hosts:
@@ -32,26 +40,5 @@ hosts:
     password: "ved"
     networks:
       - hoif1
-    internet_access: True
-  host4:
-    image: "vm_templates/Ubuntu Server 20.04.ova"
-    username: "dev"
-    password: "ved"
-    networks:
-      - hoif2
-    internet_access: True
-  host5:
-    image: "vm_templates/Ubuntu Server 20.04.ova"
-    username: "dev"
-    password: "ved"
-    networks:
-      - hoif2
-    internet_access: True
-  Host6:
-    image: "vm_templates/Ubuntu Server 20.04.ova"
-    username: "dev"
-    password: "ved"
-    networks:
-      - hoif2
     internet_access: True
 

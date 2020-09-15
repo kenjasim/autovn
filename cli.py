@@ -46,7 +46,7 @@ class Console(Cmd):
             return
 
         try:
-            Print.print_information("Initialising network...")
+            Print.print_information("Initialising topology...")
             if len(cmds) == 1:
                 self.topo = Topology(template_file=cmds[0])
             else:
