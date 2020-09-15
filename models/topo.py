@@ -115,7 +115,7 @@ class Topology():
             Session.delete(network)
             Session.commit()
         # Destroy database 
-        datapath = Path(__file__).parent.absolute() / "data.db"
+        datapath = Path(__file__).parent.absolute() / tmp / "data.db"
         if os.path.isfile(str(datapath)):
             os.remove(str(datapath))
 
