@@ -5,18 +5,6 @@ networks:
     netaddr: "20.0.0.1"
     dhcplower: "20.0.0.2"
     dhcpupper: "20.0.0.254"
-  hoif2:
-    netaddr: "30.0.0.1"
-    dhcplower: "30.0.0.2"
-    dhcpupper: "30.0.0.254"
-  hoif3:
-    netaddr: "40.0.0.1"
-    dhcplower: "40.0.0.2"
-    dhcpupper: "40.0.0.254"
-  hoif4:
-    netaddr: "50.0.0.1"
-    dhcplower: "50.0.0.2"
-    dhcpupper: "50.0.0.254"
 
 #Hosts Configuration
 hosts:
