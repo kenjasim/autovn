@@ -14,6 +14,8 @@ from models.topo import Topology
 import atexit
 from print_colours import Print
 import logging
+from restapi.server import server_start
+from threading import Thread
 
 class Console(Cmd):
     prompt = ">>> "
@@ -23,6 +25,7 @@ class Console(Cmd):
     def __init__(self):
         Cmd.__init__(self)
         self.topo = None
+        self.server = None
         logging.basicConfig(level=logging.DEBUG,
                             filename='avn.log',
                             format='%(asctime)s, %(levelname)s, %(name)s, %(message)s')
@@ -130,7 +133,24 @@ class Console(Cmd):
         except Exception as e:
             handle_ex(e)
 
-    ############################################int.print_information
+    ############################################
+    # Launch RestAPI Server 
+    ############################################
+
+    def do_server(self, cmd):
+        """
+        Launch the RestAPI Server.
+        """
+        try:
+            Print.print_information("Starting RestAPI server...")
+            self.server = Thread(target=server_start)
+            self.server.start() 
+            if self.server.is_alive():
+                Print.print_success("Server started on http://127.0.0.1:5000")
+        except Exception as e:
+            handle_ex(e)
+
+    ############################################
     # Network Destroy
     ############################################
 
@@ -140,7 +160,7 @@ class Console(Cmd):
         """
         try:
             Print.print_information("Destroying network...")
-            self.topo.destroy()
+            self.topo.destroy() 
         except Exception as e:
             handle_ex(e)
 

@@ -166,6 +166,13 @@ class Topology():
                 host.ssh()
         else:
             raise Exception("Unknown vmname entered.")
+    
+    def get_hosts(self): 
+        """
+        Return a list of hosts. 
+        """ 
+        return list(self.hosts.values()) 
+
 
     def send_keys(self):
         """
