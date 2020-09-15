@@ -7,5 +7,16 @@ keys/*
 # VM Images
 *.ova
 
+# Database
+!tmp
+tmp/*
+
 # Log
 *.log
+
+# Python environment
+/venv
+activate
+
+# vscode 
+.vscode 

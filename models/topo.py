@@ -7,10 +7,13 @@ import xml.etree.ElementTree as ET
 from tabulate import tabulate
 import traceback
 
-from network import Network
-from host import Host
-from template import Template
+from models.network import Network
+from models.host import Host
+from constructor import Constructor
 from print_colours import Print
+
+from models.db import Session
+from models.db import close_database
 
 class Topology():
     """
@@ -27,9 +30,9 @@ class Topology():
         """
         # Check if the file exits, if not then raise an exception
         if (os.path.isfile(template_file)):
-            self.networks, self.hosts = Template(template_file).parse()
+            self.networks, self.hosts = Constructor(template_file).parse()
         else:
-            raise Exception("Failed to find the file " + template_file)
+            raise Exception("Failed to find the file " + template_file)  
 
     def start(self):
         """
@@ -84,7 +87,7 @@ class Topology():
         # Ensure all virtual machines are powered down
         self.stop()
         # Start the thread executor
-        executor = ThreadPoolExecutor(max_workers=5)
+        executor = ThreadPoolExecutor(max_workers=len(self.hosts.keys()))
         threads = []
         # Assign each host destroy command to a thread
         for host in self.hosts.values():
@@ -93,14 +96,30 @@ class Topology():
         # Wait for all threaded processes to complete
         for thread in threads:
             thread.result()
-        # Assign each network destroy command to a thread
+        executor.shutdown(wait=True) 
+        # Delete host database entry 
+        for host in self.hosts.values():
+            Session.delete(host)
+            Session.commit() 
+        # Start the thread executor
+        executor = ThreadPoolExecutor(max_workers=len(self.networks.keys()))
         threads = []
+        # Assign each network destroy command to a thread
         for network in self.networks.values():
             t = executor.submit(network.destroy)
             threads.append(t)
         # Wait for all threaded processes to complete
         for thread in threads:
             thread.result()
+        executor.shutdown(wait=True) 
+        # Delete network database entry 
+        for network in self.networks.values():
+            Session.delete(network)
+            Session.commit()
+        # Destroy database 
+        datapath = Path().parent.absolute() / "tmp" / "data.db"
+        if os.path.isfile(str(datapath)):
+            os.remove(str(datapath))
 
     def show_hosts(self):
         """

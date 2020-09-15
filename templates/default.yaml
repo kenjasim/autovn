@@ -1,19 +1,22 @@
 ---
-# Group Configuration
-groups:
-  host1:
-    hostname: "host1"
-  host2:
-    hostname: "host2"
-  host3:
-    hostname: "host3"
-
 # Network Configuration
 networks:
   hoif1:
     netaddr: "20.0.0.1"
     dhcplower: "20.0.0.2"
     dhcpupper: "20.0.0.254"
+  hoif2:
+    netaddr: "30.0.0.1"
+    dhcplower: "30.0.0.2"
+    dhcpupper: "30.0.0.254"
+  hoif3:
+    netaddr: "40.0.0.1"
+    dhcplower: "40.0.0.2"
+    dhcpupper: "40.0.0.254"
+  hoif4:
+    netaddr: "50.0.0.1"
+    dhcplower: "50.0.0.2"
+    dhcpupper: "50.0.0.254"
 
 #Hosts Configuration
 hosts:
@@ -23,24 +26,19 @@ hosts:
     password: "ved"
     networks:
       - hoif1
-    groups:
-      - host1
     internet_access: True
-  # host2:
-  #   image: "vm_templates/Ubuntu Server 20.04.ova"
-  #   username: "dev"
-  #   password: "ved"
-  #   networks:
-  #     - hoif1
-  #   groups:
-  #     - host2
-  #   internet_access: True
-  # host3:
-  #   image: "vm_templates/Ubuntu Server 20.04.ova"
-  #   username: "dev"
-  #   password: "ved"
-  #   networks:
-  #     - hoif1
-  #   groups:
-  #     - host3
-  #   internet_access: True
+  host2:
+    image: "vm_templates/Ubuntu Server 20.04.ova"
+    username: "dev"
+    password: "ved"
+    networks:
+      - hoif1
+    internet_access: True
+  host3:
+    image: "vm_templates/Ubuntu Server 20.04.ova"
+    username: "dev"
+    password: "ved"
+    networks:
+      - hoif1
+    internet_access: True
+
