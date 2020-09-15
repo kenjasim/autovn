@@ -14,8 +14,8 @@ from models.topo import Topology
 import atexit
 from print_colours import Print
 import logging
-from restapi.server import server_start
-from threading import Thread
+from restapi.server import RESTServer
+import multiprocessing
 
 class Console(Cmd):
     prompt = ">>> "
@@ -145,10 +145,8 @@ class Console(Cmd):
         """
         try:
             Print.print_information("Starting RestAPI server...")
-            self.server = Thread(target=server_start)
+            self.server = RESTServer()
             self.server.start()
-            if self.server.is_alive():
-                Print.print_success("Server started on http://127.0.0.1:5000")
         except Exception as e:
             handle_ex(e)
 
@@ -162,7 +160,10 @@ class Console(Cmd):
         """
         try:
             Print.print_information("Destroying network...")
+            # if self.server:
+            #     self.server.stop()
             self.topo.destroy()
+            self.topo = None
         except Exception as e:
             handle_ex(e)
 
@@ -172,13 +173,17 @@ class Console(Cmd):
 
     def do_exit(self, cmd):
         """
-        exit the application
+        Exit the application
         """
-        # Destroy network
-        a = input("Destroy the network before exiting (y/n):")
-        if a == 'y':
-            self.do_destroy("")
+        if self.topo:
+            # Destroy network
+            a = input("Destroy the network before exiting (y/n):")
+            if a == 'y':
+                self.do_destroy("")
+        if self.server:
+            self.server.stop()
         return True
+
 
 ################################################################################
 # CLI Exception handler
