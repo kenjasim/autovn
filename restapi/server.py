@@ -1,6 +1,7 @@
 from gevent.pywsgi import WSGIServer, LoggingLogAdapter
 from flask import Flask, Response, jsonify
 import multiprocessing, logging
+from print_colours import Print
 
 from resources import Hosts, Networks
 
@@ -21,6 +22,7 @@ def get_networks():
     networks = Networks().get_all()
     return jsonify([network.dict() for network in networks])
 
+
 class RESTServer(object):
 
     def __init__(self, address="", port=5000):
@@ -34,6 +36,9 @@ class RESTServer(object):
         self.http_server = WSGIServer((self.address, self.port), application=app, log=log, error_log=log)
         self.proc = multiprocessing.Process(target=self.http_server.serve_forever)
         self.proc.start()
+        if self.address == "": 
+            self.address = "127.0.0.1"
+        Print.print_success("Server avaliable at: http://" + self.address + ":" + str(self.port) + "/")
 
     def stop(self):
         self.http_server.stop()
