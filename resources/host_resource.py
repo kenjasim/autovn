@@ -36,3 +36,10 @@ class Hosts():
     def post(self, host):
         """Put a host into the database"""
         host.write_to_db()
+    
+    @classmethod
+    def get_ip(self, vmname): 
+        """Get the ip address of the host"""
+        host = Session.query(Host).filter_by(vmname=vmname).first()
+        if host:
+            return host.get_ip()
