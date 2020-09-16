@@ -1,8 +1,9 @@
 from gevent.pywsgi import WSGIServer
 from gevent.pywsgi import LoggingLogAdapter
-from flask import Flask, Response
+from flask import Flask, Response, jsonify
 import multiprocessing
 import logging
+import json
 
 from resources import Hosts
 
@@ -15,7 +16,8 @@ log = LoggingLogAdapter(logger, level=10)
 
 @app.route('/hosts', methods=['GET'])
 def get_hosts():
-    return Hosts().get_all()
+    hosts = Hosts().get_all()
+    return jsonify([host.dict() for host in hosts])
 
 class RESTServer(object):
 
@@ -23,6 +25,8 @@ class RESTServer(object):
         self.address = address
         self.port = port
         self.http_server = None
+        # https://github.com/pytest-dev/pytest-flask/issues/104
+        multiprocessing.set_start_method("fork")
 
     def start(self):
         self.http_server = WSGIServer((self.address, self.port), application=app, log=log, error_log=log)

@@ -1,6 +1,5 @@
 from models.host import Host
 from db import Session
-import json
 
 class Hosts():
     """
@@ -12,9 +11,5 @@ class Hosts():
         """Return all hosts"""
         hosts = Session.query(Host).all()
         if hosts:
-            host_list = []
-            for host in hosts:
-                h_dict = host.dict()
-                host_list.append(h_dict)
-            return json.dumps(host_list)
+            return hosts
         raise Exception("No hosts in database")
