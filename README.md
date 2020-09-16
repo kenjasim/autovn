@@ -181,7 +181,7 @@ $ sudo shutdown -h now
 ``` 
 Opening the VM will re-allocate a machine-id. 
 
-## Dual Honed Virtual Machines Fail to Connect to Secondary Networks
+### Dual Honed Virtual Machines Fail to Connect to Secondary Networks
 Additional interaces must be configured for each network. Edit 00-installer-config.yaml as follows:
 
 ```bash
