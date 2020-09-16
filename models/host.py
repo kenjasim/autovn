@@ -270,6 +270,13 @@ class Host(Base):
 
         return new_dict
 
+    def write_to_db(self):
+        """
+        Write the host to the database
+        """
+        Session.add(self)
+        Session.commit()
+
 
 ################################################################################
 # Main

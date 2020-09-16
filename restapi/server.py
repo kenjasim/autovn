@@ -1,11 +1,8 @@
-from gevent.pywsgi import WSGIServer
-from gevent.pywsgi import LoggingLogAdapter
+from gevent.pywsgi import WSGIServer, LoggingLogAdapter
 from flask import Flask, Response, jsonify
-import multiprocessing
-import logging
-import json
+import multiprocessing, logging
 
-from resources import Hosts
+from resources import Hosts, Networks
 
 app = Flask(__name__)
 app.debug = False
@@ -18,6 +15,11 @@ log = LoggingLogAdapter(logger, level=10)
 def get_hosts():
     hosts = Hosts().get_all()
     return jsonify([host.dict() for host in hosts])
+
+@app.route('/networks', methods=['GET'])
+def get_networks():
+    networks = Networks().get_all()
+    return jsonify([network.dict() for network in networks])
 
 class RESTServer(object):
 

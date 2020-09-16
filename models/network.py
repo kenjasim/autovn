@@ -8,7 +8,7 @@ from print_colours import Print
 
 # Create ObjectRelationalModel (ORM) base class
 from sqlalchemy import Column, Integer, String, Sequence
-from db import Base
+from db import Base, Session
 
 class Network(Base):
     # Define 'network' SQL table for instances of Host
@@ -166,6 +166,28 @@ class Network(Base):
         Print.print_success("Destroyed network ")
         # Delete database entry
         ####
+
+    def dict(self):
+        """
+        Return an ordered dictionary for printing purposes
+        """
+        # Get the dict and organised keys
+        dict = self.__dict__
+        keys = ["id", "label", "netname", "netaddr", "dhcplower", "dhcpupper"]
+
+        # Create and return a new dictionary
+        new_dict= {}
+        for key in keys:
+            new_dict[key] = dict[key]
+
+        return new_dict
+
+    def write_to_db(self):
+        """
+        Write the network to the database
+        """
+        Session.add(self)
+        Session.commit()
 
 
 ################################################################################
