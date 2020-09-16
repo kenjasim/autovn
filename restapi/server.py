@@ -22,6 +22,11 @@ def get_networks():
     networks = Networks().get_all()
     return jsonify([network.dict() for network in networks])
 
+@app.route('/host/<string:vmname>/ipv4', methods=['GET'])
+def get_ip(vmname):
+    ip = Hosts().get_ip(vmname)
+    return jsonify([{'ip': ip}])
+
 
 class RESTServer(object):
 
