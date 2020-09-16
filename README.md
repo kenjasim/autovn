@@ -147,6 +147,7 @@ Or press, CTRL + C
 
 ```
 Or press, CTRL + C 
+
 Response:
 ```python
 [i] Starting RestAPI server...
@@ -187,15 +188,15 @@ Additional interaces must be configured for each network. Edit 00-installer-conf
 $ sudo nano /etc/netplan/00-installer-config.yaml
 ```
 ```yaml
-	#####
-	network:
-	  ethernets:
-	    enp0s3:
-	    	dhcp4: true
-	    enp0s8:
-	    	dhcp4: true
-	  version: 2
+    #####
+    network:
+        ethernets:
+        enp0s3:
+            dhcp4: true
+        enp0s8:
+            dhcp4: true
+        version: 2
 ```
 ```bash
-$ sudo netplan apply```
+$ sudo netplan apply
 ```
