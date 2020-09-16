@@ -25,6 +25,8 @@ class RESTServer(object):
         self.address = address
         self.port = port
         self.http_server = None
+        # https://github.com/pytest-dev/pytest-flask/issues/104
+        multiprocessing.set_start_method("fork")
 
     def start(self):
         self.http_server = WSGIServer((self.address, self.port), application=app, log=log, error_log=log)
