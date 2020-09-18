@@ -16,6 +16,12 @@ from print_colours import Print
 import logging
 from restapi.server import RESTServer
 import multiprocessing
+from pathlib import Path 
+
+# Log path 
+p = Path().parent.absolute() / "tmp"
+if not os.path.isdir(str(p)): 
+    os.mkdir(str(p)) 
 
 class Console(Cmd):
     prompt = ">>> "
@@ -27,7 +33,7 @@ class Console(Cmd):
         self.topo = None
         self.server = None
         logging.basicConfig(level=logging.DEBUG,
-                            filename='avn.log',
+                            filename='tmp/avn.log',
                             format='%(asctime)s, %(levelname)s, %(name)s, %(message)s')
 
         #Exit cleanup on keyboard interrupt
