@@ -2,6 +2,13 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.engine.reflection import Inspector
+from pathlib import Path 
+import os 
+
+# Create db path 
+p = Path().parent.absolute() / "tmp"
+if not os.path.isdir(str(p)): 
+    os.mkdir(str(p)) 
 
 Base = declarative_base()
 Session = scoped_session(sessionmaker())

@@ -215,9 +215,13 @@ class Host(Base):
         """
         Create and distribute SSH keys for/to the host.
         """
+        p = Path().parent.absolute() / "keys"
         keyname = "id_rsa_vb"
-        ap = Path().parent.absolute() / "keys" / keyname
+        # Check keys path exists, else create 
+        if not os.path.isdir(str(p)): 
+            os.mkdir(str(p)) 
         # Check if key already exists
+        ap = p / keyname
         if not ((os.path.isfile(str(ap))) or (os.path.isfile(str(ap) + ".pub"))):
             # Create RSA key pair
             cmd = "ssh-keygen -t rsa -b 4096 -q -N \"\" -f " + str(ap)
