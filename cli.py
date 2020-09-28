@@ -10,13 +10,16 @@ import re
 import time
 import traceback
 from cmd import Cmd
-from models.topo import Topology
+from topo import Topology
 import atexit
 from print_colours import Print
 import logging
 from restapi.server import RESTServer
 import multiprocessing
-from pathlib import Path 
+from pathlib import Path
+from tabulate import tabulate
+
+from resources import Hosts
 
 # Log path 
 p = Path().parent.absolute() / "tmp"
@@ -30,7 +33,6 @@ class Console(Cmd):
 
     def __init__(self):
         Cmd.__init__(self)
-        self.topo = None
         self.server = None
         logging.basicConfig(level=logging.DEBUG,
                             filename='tmp/avn.log',
@@ -57,11 +59,9 @@ class Console(Cmd):
         try:
             Print.print_information("Initialising topology...")
             if len(cmds) == 1:
-                self.topo = Topology()
-                self.topo.build(template_file=cmds[0])
+                Topology.build(template_file=cmds[0])
             else:
-                self.topo = Topology()
-                self.topo.build()
+                Topology.build()
         except Exception as e:
             handle_ex(e)
 
@@ -75,7 +75,7 @@ class Console(Cmd):
         """
         try:
             Print.print_information("Starting network...")
-            self.topo.start()
+            Topology.start()
         except Exception as e:
             handle_ex(e)
 
@@ -98,9 +98,9 @@ class Console(Cmd):
         # command execution
         try:
             if cmds[0] == 'h':
-                self.topo.show_hosts()
+                print(create_table(Topology.show_hosts()))
             if cmds[0] == 'n':
-                self.topo.show_networks()
+                print(create_table(Topology.show_networks()))
         except Exception as e:
             handle_ex(e)
 
@@ -123,7 +123,7 @@ class Console(Cmd):
             vmname = cmds[0]
         # command executionint.print_information
         try:
-            self.topo.shell(vmname)
+            Topology.shell(vmname)
         except Exception as e:
             handle_ex(e)
 
@@ -137,7 +137,7 @@ class Console(Cmd):
         """
         try:
             Print.print_information("Distributing keys...")
-            self.topo.send_keys()
+            Topology.send_keys()
         except Exception as e:
             handle_ex(e)
 
@@ -168,8 +168,7 @@ class Console(Cmd):
             Print.print_information("Destroying network...")
             # if self.server:
             #     self.server.stop()
-            self.topo.destroy()
-            self.topo = None
+            Topology.destroy()
         except Exception as e:
             handle_ex(e)
 
@@ -181,14 +180,23 @@ class Console(Cmd):
         """
         Exit the application
         """
-        if self.topo:
+        try:
+            # Stop the rest api if running
+            if self.server:
+                self.server.stop()
+
+            # Check if there are any hosts, if not then exit without asking to destroy
+            Hosts().get_all()
+
             # Destroy network
             a = input("Destroy the network before exiting (y/n):")
             if a == 'y':
                 self.do_destroy("")
-        if self.server:
-            self.server.stop()
-        return True
+            
+        except Exception as e:
+            handle_ex(e)
+        finally:
+            return True
 
 
 ################################################################################
@@ -199,6 +207,21 @@ def handle_ex(exception):
     """Print exception and traceback."""
     logging.exception(exception)
     Print.print_error(exception)
+
+def create_table(items):
+    """
+    Create and print a table to the console
+    from a dict
+
+    Keyword Arguments:
+        items - a dict of items
+
+    Returns
+        nicely formatted table string
+    """
+    header = items[0].keys()
+    rows =  [item.values() for item in items]
+    return tabulate(rows, header,tablefmt="fancy_grid")
 
 ################################################################################
 # Main

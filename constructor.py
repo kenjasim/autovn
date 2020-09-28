@@ -1,4 +1,4 @@
-import yaml
+import yaml, pathlib, os
 from models.network import Network
 from models.host import Host
 
@@ -19,9 +19,16 @@ class Constructor():
         # Generate the network
         self.networks = {}
 
-        # Read the template file
-        with open(template_file) as file:
-            self.template = yaml.safe_load(file)
+        # Build the path
+        template_path = str(pathlib.Path(__file__).parent.absolute() / "templates" / template_file )
+
+        # Check if the path exits
+        if (os.path.isfile(template_path)):
+            # Read the template file
+            with open(template_path) as file:
+                self.template = yaml.safe_load(file)
+        else:
+            raise Exception("Failed to find the file " + template_file)
 
     def parse(self):
         """

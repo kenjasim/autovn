@@ -8,11 +8,16 @@ import optparse
 
 def parseargs():
     p = optparse.OptionParser()
-    p.add_option("-v", dest="noDB", action="store_true", help="Start without the database.")
+    p.add_option("-r", dest="restapi" ,action="store_true", help="Start avn's REST Api only")
     return p.parse_args()
     
 from cli import Console
+from restapi.server import RESTServer
 
 if __name__ == '__main__':
     (opts, args) = parseargs()
-    console = Console().cmdloop()
+    
+    if opts.restapi == True:
+        RESTServer().start()
+    else:
+        console = Console().cmdloop()
