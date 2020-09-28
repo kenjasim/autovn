@@ -86,7 +86,7 @@ def network_details():
 def get_hosts():
     try:
         hosts = Hosts().get_all()
-        return jsonify([host.dict() for host in hosts])
+        return jsonify([host.dict() for host in hosts]), 200
     except Exception as e:
         handle_ex(e)
         return ("Error", 500)
@@ -95,7 +95,7 @@ def get_hosts():
 def get_networks():
     try:
         networks = Networks().get_all()
-        return jsonify([network.dict() for network in networks])
+        return jsonify([network.dict() for network in networks]), 200
     except Exception as e:
         handle_ex(e)
         return ("Error", 500)
@@ -104,7 +104,7 @@ def get_networks():
 def get_ip(vmname):
     try:
         ip = Hosts().get_ip(vmname)
-        return jsonify([{'ip': ip}])
+        return jsonify([{'ip': ip}]), 200
     except Exception as e:
         handle_ex(e)
         return ("Error", 500)
