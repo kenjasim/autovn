@@ -1,0 +1,37 @@
+---
+# Network Configuration
+networks:
+  hoif1:
+    netaddr: "20.0.0.1"
+    dhcplower: "20.0.0.2"
+    dhcpupper: "20.0.0.254"
+  hoif2:
+    netaddr: "20.1.0.1"
+    dhcplower: "20.1.0.2"
+    dhcpupper: "20.1.0.254"
+
+#Hosts Configuration
+hosts:
+  host1:
+    image: "vm_templates/Ubuntu Server 20.04.ova"
+    username: "dev"
+    password: "ved"
+    networks:
+      - hoif1
+      - hoif2
+    internet_access: False
+  host2:
+    image: "vm_templates/Ubuntu Server 20.04.ova"
+    username: "dev"
+    password: "ved"
+    networks:
+      - hoif1
+    internet_access: True
+  host3:
+    image: "vm_templates/Ubuntu Server 20.04.ova"
+    username: "dev"
+    password: "ved"
+    networks:
+      - hoif1
+    internet_access: True
+

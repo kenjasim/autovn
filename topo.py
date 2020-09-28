@@ -20,26 +20,24 @@ class Topology():
     Launch a network toplogy using VirtualBox
     """
 
-    def __init__(self):
-        # Create SQL tables for networks and hosts
-        create_tables()
-
-    def build(self, template_file="templates/default.yaml"):
+    @staticmethod
+    def build(template_file="default.yaml"):
         """
         Read a yaml configuration file to get the network required and then
         initialise the network
         """
+        # Make sure that the tables are created
+        create_tables()
+
         # Check the db before building
         if Hosts().check_database():
             raise Exception ("Database already contains host, please consider destroying")
 
         # Check if the file exits, if not then raise an exception
-        if (os.path.isfile(template_file)):
-            Constructor(template_file).parse()
-        else:
-            raise Exception("Failed to find the file " + template_file)
-
-    def start(self):
+        Constructor(template_file).parse()
+    
+    @staticmethod
+    def start():
         """
         Start virtual network and machines.
         """
@@ -58,9 +56,10 @@ class Topology():
         for thread in threads:
             thread.result()
         # Poll hosts for IP assignment
-        self.poll_ips()
+        Topology.poll_ips()
 
-    def poll_ips(self, timeout=30):
+    @staticmethod
+    def poll_ips(timeout=30):
         """
         Poll hosts for IP assignment.
         """
@@ -76,7 +75,8 @@ class Topology():
         if len(hosts) > 0:
             Print.print_warning("Timeout, IP addresses not yet assigned.")
 
-    def stop(self):
+    @staticmethod
+    def stop():
         """
         Shutdown virtual machines.
         """
@@ -94,7 +94,8 @@ class Topology():
         for thread in threads:
             thread.result()
 
-    def destroy(self):
+    @staticmethod
+    def destroy():
         """
         Permanently delete all virtual machines and networks.
         """
@@ -103,7 +104,7 @@ class Topology():
             hosts = Hosts().get_all()
 
             # Ensure all virtual machines are powered down
-            self.stop()
+            Topology.stop()
             # Start the thread executor
             executor = ThreadPoolExecutor(max_workers=len(hosts))
             threads = []
@@ -143,42 +144,49 @@ class Topology():
         if os.path.isfile(str(datapath)):
             os.remove(str(datapath))
 
-    def show_hosts(self):
+    @staticmethod
+    def show_hosts():
         """
         Return summary of all host properties.
         """
         # Get the hosts from the database
         hosts = Hosts().get_all()
-        # Table header
-        header = ["vmname", "VMState", "ostype", "cpus", "memory"]
-        # Table data, each row is a list
-        rows = []
-        for host in hosts:
-            s = host.properties()
-            row = [host.vmname] + [s[h] for h in header[1:]]
-            rows.append(row)
-        summary = tabulate(rows, header, tablefmt="fancy_grid")
-        print(summary)
 
-    def show_networks(self):
+        # Table data, each row is a list
+        data = []
+        for host in hosts:
+            s = {}
+            s["vmname"] = host.vmname
+            s.update(host.properties())
+            del s['nics']
+            data.append(s)
+       
+        return data
+
+    @staticmethod
+    def show_networks():
         """
         Return summary of all host-network configurations.
         """
         # Get the hosts from the database
         hosts = Hosts().get_all()
-        # Table header
-        header = ["vmname", "nic", "netname", "mac", "ip"]
         # Table data, each row is a list
-        rows = []
-        for host in hosts:
+        data = []
+
+        for host in hosts: 
             nics = host.properties()["nics"]
             for nic in nics.keys():
-                row = [host.vmname, nic] + [nics[nic][h] for h in header[2:]]
-                rows.append(row)
-        summary = tabulate(rows, header, tablefmt="fancy_grid")
-        print(summary)
+                n = {}
+                n["vmname"] = host.vmname
+                n["name"] = nic
+                n["netname"] = nics[nic]["netname"]
+                n["mac"] = nics[nic]["mac"]
+                n["ip"] = nics[nic]["ip"]
+                data.append(n)
+        return data
 
-    def shell(self, vmname='all'):
+    @staticmethod
+    def shell(vmname='all'):
         """
         Create an SSH shell terminal sessions with each host.
         Support for Mac only.
@@ -196,7 +204,8 @@ class Topology():
         else:
             raise Exception("Unknown vmname entered.")
 
-    def send_keys(self):
+    @staticmethod
+    def send_keys():
         """
         Distribute SSH public keys to hosts.
         Support for Mac only.
