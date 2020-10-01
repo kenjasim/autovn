@@ -93,6 +93,24 @@ class Topology():
         # Wait for all threaded processes to complete
         for thread in threads:
             thread.result()
+    
+    @staticmethod
+    def restart():
+        """
+        Restart virtual machines.
+        """
+        # Get the hosts from the database
+        hosts = Hosts().get_all()
+        # Start the thread executor
+        executor = ThreadPoolExecutor(max_workers=len(hosts))
+        threads = []
+        # Assign each host restart command to a thread
+        for host in hosts:
+            t = executor.submit(host.restart)
+            threads.append(t)
+        # Wait for all threaded processes to complete
+        for thread in threads:
+            thread.result()
 
     @staticmethod
     def destroy():

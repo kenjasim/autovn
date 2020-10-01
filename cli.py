@@ -78,6 +78,20 @@ class Console(Cmd):
             Topology.start()
         except Exception as e:
             handle_ex(e)
+    
+    ############################################
+    # Restart Virtual Machines
+    ############################################
+
+    def do_restart(self, cmd):
+        """
+        Restart the virtual machines.
+        """
+        try:
+            Print.print_information("Restarting virtual machines...")
+            Topology.restart()
+        except Exception as e:
+            handle_ex(e)
 
     ############################################
     # Show properties

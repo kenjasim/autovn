@@ -45,6 +45,15 @@ def start():
         handle_ex(e)
         return ("Error", 500)
 
+@app.route('/restart', methods=['PUT'])
+def restart():
+    try:
+        threading.Thread(target=Topology.restart).start()
+        return ("Network restart request accepted", 202)
+    except Exception as e:
+        handle_ex(e)
+        return ("Error", 500)
+
 @app.route('/keys', methods=['PUT'])
 def keys():
     try:
