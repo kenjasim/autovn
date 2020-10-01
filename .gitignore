@@ -17,6 +17,7 @@ tmp/*
 # Python environment
 /venv
 activate
+*.pyc
 
 # vscode 
 .vscode 

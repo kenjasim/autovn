@@ -182,7 +182,15 @@ class Host(Base):
         """
         Power off and on again the virtual machine.
         """
+        # Call host to poweroff 
         self.stop()
+        # Wait for VM to poweroff 
+        t = time.time() 
+        while time.time() - t < 30:
+            state = self.properties()["VMState"]
+            if state == "poweroff":
+                break
+        time.sleep(3) 
         self.start()
 
     def destroy(self):
