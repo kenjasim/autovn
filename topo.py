@@ -9,7 +9,8 @@ import traceback
 
 from models.network import Network
 from models.host import Host
-from resources import Hosts, Networks
+from models.deployment import Deployment
+from resources import Hosts, Networks, Deployments
 from constructor import Constructor
 from print_colours import Print
 
@@ -29,100 +30,105 @@ class Topology():
         # Make sure that the tables are created
         create_tables()
 
-        # Check the db before building
-        if Hosts().check_database():
-            raise Exception ("Database already contains host, please consider destroying")
-
         # Check if the file exits, if not then raise an exception
         Constructor(template_file).parse()
     
     @staticmethod
-    def start():
+    def start(deployment_id):
         """
         Start virtual network and machines.
         """
         # Get the hosts from the database
-        hosts = Hosts().get_all()
+        hosts = Hosts().get_deployment(deployment_id)
+        if hosts:
+            # Start the thread executor
+            executor = ThreadPoolExecutor(max_workers=len(hosts))
+            threads = []
 
-        # Start the thread executor
-        executor = ThreadPoolExecutor(max_workers=len(hosts))
-        threads = []
-
-        # Assign each host start command to a thread
-        for host in hosts:
-            t = executor.submit(host.start)
-            threads.append(t)
-        # Wait for all threaded processes to complete
-        for thread in threads:
-            thread.result()
-        # Poll hosts for IP assignment
-        Topology.poll_ips()
+            # Assign each host start command to a thread
+            for host in hosts:
+                t = executor.submit(host.start)
+                threads.append(t)
+            # Wait for all threaded processes to complete
+            for thread in threads:
+                thread.result()
+            # Poll hosts for IP assignment
+            Topology.poll_ips(deployment_id)
+        else:
+            Print.print_error("No Deployment with id {id}".format(id=deployment_id))
 
     @staticmethod
-    def poll_ips(timeout=30):
+    def poll_ips(deployment_id, timeout=30):
         """
         Poll hosts for IP assignment.
         """
         # Get the hosts from the database
-        hosts = Hosts().get_all()
-
-        t = time.time()
-        while time.time() - t < timeout and len(hosts) > 0:
-            time.sleep(1)
-            for host in hosts:
-                if host.get_ip():
-                    hosts.remove(host)
-        if len(hosts) > 0:
-            Print.print_warning("Timeout, IP addresses not yet assigned.")
+        hosts = Hosts().get_deployment(deployment_id)
+        if hosts:
+            t = time.time()
+            while time.time() - t < timeout and len(hosts) > 0:
+                time.sleep(1)
+                for host in hosts:
+                    if host.get_ip():
+                        hosts.remove(host)
+            if len(hosts) > 0:
+                Print.print_warning("Timeout, IP addresses not yet assigned.")
+        else:
+            Print.print_error("No Deployment with id {id}".format(id=deployment_id))
 
     @staticmethod
-    def stop():
+    def stop(deployment_id):
         """
         Shutdown virtual machines.
         """
-        # Get the hosts from the database
-        hosts = Hosts().get_all()
+        hosts = Hosts().get_deployment(deployment_id)
+        if hosts:
+            # Start the thread executor
+            executor = ThreadPoolExecutor(max_workers=3)
+            threads = []
+            # Assign each host shutdown command to a thread
+            for host in hosts:
+                t = executor.submit(host.stop)
+                threads.append(t)
+            # Wait for all threaded processes to complete
+            for thread in threads:
+                thread.result()
+        else:
+            Print.print_error("No Deployment with id {id}".format(id=deployment_id))
 
-        # Start the thread executor
-        executor = ThreadPoolExecutor(max_workers=3)
-        threads = []
-        # Assign each host shutdown command to a thread
-        for host in hosts:
-            t = executor.submit(host.stop)
-            threads.append(t)
-        # Wait for all threaded processes to complete
-        for thread in threads:
-            thread.result()
     
     @staticmethod
-    def restart():
+    def restart(deployment_id):
         """
         Restart virtual machines.
         """
-        # Get the hosts from the database
-        hosts = Hosts().get_all()
-        # Start the thread executor
-        executor = ThreadPoolExecutor(max_workers=len(hosts))
-        threads = []
-        # Assign each host restart command to a thread
-        for host in hosts:
-            t = executor.submit(host.restart)
-            threads.append(t)
-        # Wait for all threaded processes to complete
-        for thread in threads:
-            thread.result()
+        hosts = Hosts().get_deployment(deployment_id)
+        if hosts:
+             # Start the thread executor
+            executor = ThreadPoolExecutor(max_workers=len(hosts))
+            threads = []
+            # Assign each host restart command to a thread
+            for host in hosts:
+                t = executor.submit(host.restart)
+                threads.append(t)
+            # Wait for all threaded processes to complete
+            for thread in threads:
+                thread.result()
+        else:
+            Print.print_error("No Deployment with id {id}".format(id=deployment_id))
+
+       
 
     @staticmethod
-    def destroy():
+    def destroy(deployment_id):
         """
         Permanently delete all virtual machines and networks.
         """
-        if Hosts().check_database():
-            # Get the hosts from the database
-            hosts = Hosts().get_all()
+        hosts = Hosts().get_deployment(deployment_id)
+        if hosts:
 
             # Ensure all virtual machines are powered down
-            Topology.stop()
+            Topology.stop(deployment_id)
             # Start the thread executor
             executor = ThreadPoolExecutor(max_workers=len(hosts))
             threads = []
@@ -134,33 +140,37 @@ class Topology():
             for thread in threads:
                 thread.result()
             executor.shutdown(wait=True)
+
             # Delete host database entry
             for host in hosts:
                 Session.delete(host)
                 Session.commit()
 
             # Get the networks from the database
-            networks = Networks().get_all()
+            networks = Networks().get_deployment(deployment_id)
 
-            # Start the thread executor
-            executor = ThreadPoolExecutor(max_workers=len(networks))
-            threads = []
-            # Assign each network destroy command to a thread
-            for network in networks:
-                t = executor.submit(network.destroy)
-                threads.append(t)
-            # Wait for all threaded processes to complete
-            for thread in threads:
-                thread.result()
-            executor.shutdown(wait=True)
-            # Delete network database entry
-            for network in networks:
-                Session.delete(network)
-                Session.commit()
-        # Destroy database
-        datapath = Path().parent.absolute() / "tmp" / "data.db"
-        if os.path.isfile(str(datapath)):
-            os.remove(str(datapath))
+            if networks:
+                # Start the thread executor
+                executor = ThreadPoolExecutor(max_workers=len(networks))
+                threads = []
+                # Assign each network destroy command to a thread
+                for network in networks:
+                    t = executor.submit(network.destroy)
+                    threads.append(t)
+                # Wait for all threaded processes to complete
+                for thread in threads:
+                    thread.result()
+                executor.shutdown(wait=True)
+
+                # Delete network database entry
+                for network in networks:
+                    Session.delete(network)
+                    Session.commit()
+
+            # Delete deployment
+            Deployments().delete_by_id(deployment_id)
+        else:
+            Print.print_error("No Deployment with id {id}".format(id=deployment_id))
 
     @staticmethod
     def show_hosts():
@@ -177,6 +187,7 @@ class Topology():
             s["vmname"] = host.vmname
             s.update(host.properties())
             del s['nics']
+            s['deployment'] = host.deployment_id
             data.append(s)
        
         return data
@@ -204,7 +215,7 @@ class Topology():
         return data
 
     @staticmethod
-    def shell(vmname='all'):
+    def shell(vmname):
         """
         Create an SSH shell terminal sessions with each host.
         Support for Mac only.
@@ -212,26 +223,24 @@ class Topology():
             vmname: name of rm to create shell session for
         """
         host = Hosts().get_vmname(vmname)
-        if vmname == 'all':
-            # Get the hosts from the database
-            hosts = Hosts().get_all()
-            for host in hosts:
-                host.ssh()
-        elif host:
+        if host:
             host.ssh()
         else:
             raise Exception("Unknown vmname entered.")
 
     @staticmethod
-    def send_keys(vmname):
+    def send_keys(deployment_id):
         """
         Distribute SSH public keys to hosts.
         """
-        # Get the hosts from the database
-        hosts = Hosts().get_all()
-        for host in hosts:
-            if vmname == "all" or host.get_vmname() == vmname:
+        hosts = Hosts().get_deployment(deployment_id)
+        if hosts:
+            for host in hosts:
                 host.dist_pkey()
+        else:
+            Print.print_error("No Deployment with id {id}".format(id=deployment_id))
+
+        
 
 
 
@@ -242,17 +251,7 @@ class Topology():
 ################################################################################
 
 if __name__ == '__main__':
-    t = Topology("k8")
-    t.start()
-    t.show_hosts()
-    t.show_networks()
-    time.sleep(10)
-    t.shell()
-    print("close (y/n):")
-    a = input()
-    if a == 'y':
-        t.destroy()
-
+    pass
 
 ################################################################################
 # Resources

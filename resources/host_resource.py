@@ -15,6 +15,15 @@ class Hosts():
         raise Exception("No hosts in database")
 
     @classmethod
+    def get_deployment(self, deployment_id):
+        """Return all hosts with a fiven deployment id"""
+        hosts = Session.query(Host).filter_by(deployment_id=deployment_id).all()
+        if hosts:
+            return hosts
+        else:
+            return None
+
+    @classmethod
     def get_vmname(self, vmname):
         """Return a host with a given vmname"""
         host = Session.query(Host).filter_by(vmname=vmname).first()
@@ -43,3 +52,9 @@ class Hosts():
         host = Session.query(Host).filter_by(vmname=vmname).first()
         if host:
             return host.get_ip()
+
+    @classmethod
+    def delete(self, host):
+        """Delete a host from the database"""
+        Session.delete(host)
+        Session.commit()

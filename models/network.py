@@ -7,24 +7,25 @@ import sys
 from print_colours import Print
 
 # Create ObjectRelationalModel (ORM) base class
-from sqlalchemy import Column, Integer, String, Sequence
+from sqlalchemy import Column, Integer, String, Sequence, ForeignKey
 from db import Base, Session
 
 class Network(Base):
     # Define 'network' SQL table for instances of Host
     __tablename__ = 'networks'
     id = Column(Integer, Sequence('network_id_seq'), primary_key=True)
-    label = Column(String, unique=True)
+    label = Column(String)
     netname = Column(String, unique=True)
-    netaddr = Column(String)
+    netaddr = Column(String, unique=True)
     dhcplower = Column(String)
     dhcpupper = Column(String)
+    deployment_id = Column(Integer, ForeignKey('deployment.id'))
 
     def __repr__(self):
-        return "<Network(label='%s', netname='%s', netaddr='%s', dhcplower='%s', dhcpupper='%s')>" % (
-            self.label, self.netname, self.netaddr, self.dhcplower, self.dhcpupper)
+        return "<Network(label='%s', netname='%s', netaddr='%s', dhcplower='%s', dhcpupper='%s', deployment_id='%s')>" % (
+            self.label, self.netname, self.netaddr, self.dhcplower, self.dhcpupper, self.deployment_id)
 
-    def __init__(self, label, netaddr, dhcplower, dhcpupper):
+    def __init__(self, label, netaddr, dhcplower, dhcpupper, deployment_id):
         """
         Initialises VirtualBox host-only network interface
         Options:
@@ -39,6 +40,7 @@ class Network(Base):
         self.netaddr = netaddr
         self.dhcplower = dhcplower
         self.dhcpupper = dhcpupper
+        self.deployment_id = deployment_id
         # Call VirtualBox to create network
         self.create()
 

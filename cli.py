@@ -49,7 +49,7 @@ class Console(Cmd):
         """
         Initialise network. Leave template blank for default 3h-1n config.
 
-        build <path-to-template>
+        build <path/to/template>
         """
         cmds = cmd.split()
         if len(cmds) > 1:
@@ -71,11 +71,18 @@ class Console(Cmd):
 
     def do_start(self, cmd):
         """
-        Initialise network.
+        Start virtual machines within a deployment.
+
+        start <deployment-id>    
         """
+        # command validation
+        cmds = cmd.split()
+        if len(cmds) != 1:
+            Print.print_warning("Invalid number of arguments, see 'help show'")
+            return
         try:
             Print.print_information("Starting network...")
-            Topology.start()
+            Topology.start(cmds[0])
         except Exception as e:
             handle_ex(e)
     
@@ -85,11 +92,17 @@ class Console(Cmd):
 
     def do_restart(self, cmd):
         """
-        Restart the virtual machines.
+        Restart the virtual machines within a deployment.
+
+        restart <deployment-id>  
         """
+        cmds = cmd.split()
+        if len(cmds) != 1:
+            Print.print_warning("Invalid number of arguments, see 'help show'")
+            return
         try:
             Print.print_information("Restarting virtual machines...")
-            Topology.restart()
+            Topology.restart(cmds[0])
         except Exception as e:
             handle_ex(e)
 
@@ -99,7 +112,9 @@ class Console(Cmd):
 
     def do_show(self, cmd):
         """
-        Show Topology properties.
+        Show properties for all deployments.
+
+        show [option]
         Options:
             h: host properties
             n: network adapter properties
@@ -124,20 +139,20 @@ class Console(Cmd):
 
     def do_shell(self, cmd):
         """
-        Start shell sessions.
-        Options:
-            vmname: start a shell session with a specific vm,
-            if none specified then sessions started with all.
+        Start shell session with vm.
+
+        shell <vmname>
         """
         # command validation
-        Print.print_information("Establishing shell...")
         cmds = cmd.split()
-        vmname = "all"
-        if len(cmds) == 1:
-            vmname = cmds[0]
-        # command executionint.print_information
+        if len(cmds) != 1:
+            Print.print_warning("Invalid number of arguments, see 'help show'")
+            return
+        
+        # command execution
+        Print.print_information("Establishing shell...")
         try:
-            Topology.shell(vmname)
+            Topology.shell(cmds[0])
         except Exception as e:
             handle_ex(e)
 
@@ -147,19 +162,16 @@ class Console(Cmd):
     
     def do_keys(self, cmd):
         """
-        Distribute SSH keys to hosts.
+        Distribute SSH keys to all hosts within a deployment.
 
-        keys <hostname> 
-        keys
+        keys <deployment-id> 
         """
         # command validation
         cmds = cmd.split()
         if len(cmds) != 1:
             Print.print_warning("Invalid number of arguments, see 'help keys'")
             return
-        vmname = "all"
-        if len(cmds) == 1:
-            vmname = cmds[0]
+
         # command execution
         try:
             Print.print_information("Distributing keys...")
@@ -188,13 +200,21 @@ class Console(Cmd):
 
     def do_destroy(self, cmd):
         """
-        Destroy the network.
+        Destroy the vms and network interfaces within a deployment.
+
+        destroy <deployment-id>
         """
+        # command validation
+        cmds = cmd.split()
+        if len(cmds) != 1:
+            Print.print_warning("Invalid number of arguments, see 'help keys'")
+            return
+
         try:
             Print.print_information("Destroying network...")
             # if self.server:
             #     self.server.stop()
-            Topology.destroy()
+            Topology.destroy(cmds[0])
         except Exception as e:
             handle_ex(e)
 
@@ -205,19 +225,13 @@ class Console(Cmd):
     def do_exit(self, cmd):
         """
         Exit the application
+
+        exit
         """
         try:
             # Stop the rest api if running
             if self.server:
                 self.server.stop()
-
-            # Check if there are any hosts, if not then exit without asking to destroy
-            Hosts().get_all()
-
-            # Destroy network
-            a = input("Destroy the network before exiting (y/n):")
-            if a == 'y':
-                self.do_destroy("")
             
         except Exception as e:
             handle_ex(e)
