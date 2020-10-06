@@ -11,6 +11,7 @@ import time
 import traceback
 from cmd import Cmd
 from topo import Topology
+from restapi.client import RESTClient
 import atexit
 from print_colours import Print
 import logging
@@ -31,9 +32,17 @@ class Console(Cmd):
     with open('misc/intro.txt', 'r') as f:
         intro = f.read()
 
-    def __init__(self):
+    def __init__(self, remote=False, url="http://127.0.0.1:5000/"):
         Cmd.__init__(self)
         self.server = None
+        self.remote = remote
+        if remote:
+            self.client = RESTClient
+            self.client.set_server_url(url) 
+            if self.client.check_link():
+                Print.print_success("AVN Server is avaliable.") 
+        else:
+            self.client = Topology        
         logging.basicConfig(level=logging.DEBUG,
                             filename='tmp/avn.log',
                             format='%(asctime)s, %(levelname)s, %(name)s, %(message)s')
@@ -59,9 +68,9 @@ class Console(Cmd):
         try:
             Print.print_information("Initialising topology...")
             if len(cmds) == 1:
-                Topology.build(template_file=cmds[0])
+                self.client.build(template_file=cmds[0])
             else:
-                Topology.build()
+                self.client.build()
         except Exception as e:
             handle_ex(e)
 
@@ -75,7 +84,7 @@ class Console(Cmd):
         """
         try:
             Print.print_information("Starting network...")
-            Topology.start()
+            self.client.start()
         except Exception as e:
             handle_ex(e)
     
@@ -89,7 +98,7 @@ class Console(Cmd):
         """
         try:
             Print.print_information("Restarting virtual machines...")
-            Topology.restart()
+            self.client.restart()
         except Exception as e:
             handle_ex(e)
 
@@ -112,9 +121,9 @@ class Console(Cmd):
         # command execution
         try:
             if cmds[0] == 'h':
-                print(create_table(Topology.show_hosts()))
+                print(create_table(self.client.host_details()))
             if cmds[0] == 'n':
-                print(create_table(Topology.show_networks()))
+                print(create_table(self.client.network_details()))
         except Exception as e:
             handle_ex(e)
 
@@ -137,7 +146,7 @@ class Console(Cmd):
             vmname = cmds[0]
         # command executionint.print_information
         try:
-            Topology.shell(vmname)
+            self.client.shell(vmname)
         except Exception as e:
             handle_ex(e)
 
@@ -154,16 +163,13 @@ class Console(Cmd):
         """
         # command validation
         cmds = cmd.split()
-        if len(cmds) != 1:
-            Print.print_warning("Invalid number of arguments, see 'help keys'")
-            return
         vmname = "all"
         if len(cmds) == 1:
             vmname = cmds[0]
         # command execution
         try:
             Print.print_information("Distributing keys...")
-            Topology.send_keys(cmds[0])
+            self.client.send_keys(vmname)
         except Exception as e:
             handle_ex(e)
 
@@ -176,6 +182,9 @@ class Console(Cmd):
         Launch the RestAPI Server.
         """
         try:
+            if self.remote:
+                 Print.print_warning("Running as remote client, RestAPI server not applicable.")
+                 return
             Print.print_information("Starting RestAPI server...")
             self.server = RESTServer()
             self.server.start()
@@ -194,7 +203,7 @@ class Console(Cmd):
             Print.print_information("Destroying network...")
             # if self.server:
             #     self.server.stop()
-            Topology.destroy()
+            self.client.destroy()
         except Exception as e:
             handle_ex(e)
 

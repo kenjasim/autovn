@@ -92,6 +92,17 @@ class RESTClient(object):
             raise Exception("Failed to GET network details: " + r.text)
         data = r.json() 
         return data 
+
+    @staticmethod
+    def shell(vmname='all'):
+        """
+        Create an SSH shell terminal sessions with each host.
+        Support for Mac only.
+        Options:
+            vmname: name of rm to create shell session for
+        """
+        print("SHELL FUNCTIONALITY TO BE COMPLETED FOR REMOTE CLIENT")
+
     
     @staticmethod
     def get_hosts(): 
