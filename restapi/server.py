@@ -36,6 +36,10 @@ def build(template="default.yaml"):
         handle_ex(e)
         return ("Error", 500)
 
+@app.route('/', methods=['GET'])
+def check():
+    return ("Server avaliable.", 200)
+
 @app.route('/start', methods=['PUT'])
 def start():
     try:
@@ -54,10 +58,10 @@ def restart():
         handle_ex(e)
         return ("Error", 500)
 
-@app.route('/keys', methods=['PUT'])
-def keys():
+@app.route('/keys/<string:host>', methods=['PUT'])
+def keys(host):
     try:
-        threading.Thread(target=Topology.send_keys).start()
+        threading.Thread(target=Topology.send_keys, args=[host]).start()
         return ("Network keys request accepted", 202)
     except Exception as e:
         handle_ex(e)

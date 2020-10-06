@@ -223,16 +223,15 @@ class Topology():
             raise Exception("Unknown vmname entered.")
 
     @staticmethod
-    def send_keys():
+    def send_keys(vmname):
         """
         Distribute SSH public keys to hosts.
-        Support for Mac only.
         """
         # Get the hosts from the database
         hosts = Hosts().get_all()
-
         for host in hosts:
-            host.dist_pkey()
+            if vmname == "all" or host.get_vmname() == vmname:
+                host.dist_pkey()
 
 
 

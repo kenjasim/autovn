@@ -151,6 +151,12 @@ class Host(Base):
         Return host username.
         """
         return self.username
+    
+    def get_vmname(self):
+        """
+        Return host vmname.
+        """
+        return self.vmname
 
     def start(self, headerless=True):
         """
