@@ -2,7 +2,6 @@
 
 # AutoVBox Command Line
 #
-# Author: Daniel Crouch
 # Date created: September 2020
 
 import os
@@ -14,11 +13,10 @@ from topo import Topology
 import atexit
 from print_colours import Print
 import logging
-from restapi.server import RESTServer
-import multiprocessing
 from pathlib import Path
 from tabulate import tabulate
 
+from restapi.client import RESTClient
 from resources import Hosts
 
 # Log path 
@@ -26,7 +24,7 @@ p = Path().parent.absolute() / "tmp"
 if not os.path.isdir(str(p)): 
     os.mkdir(str(p)) 
 
-class Console(Cmd):
+class ClientConsole(Cmd):
     prompt = ">>> "
     with open('misc/intro.txt', 'r') as f:
         intro = f.read()
@@ -40,6 +38,29 @@ class Console(Cmd):
 
         #Exit cleanup on keyboard interrupt
         atexit.register(self.do_exit, "")
+
+    ############################################
+    # Setup connection to an AVN Api Server 
+    ############################################
+
+    def do_connect(self, cmd):
+        """
+        Setup connection to an AVN Api Server.
+        
+        connect <server url> 
+        connect "http://127.0.0.1:5000/"   (default) 
+        """
+        cmds = cmd.split() 
+        if len(cmds) > 1:
+            Print.print_warning("Invalid number of arguments, see 'help connect'")
+        try:
+            Print.print_information("Setting up connection to AVN Api.")
+            if len(cmds) == 1:
+                RESTClient.set_server_url(cmds[0]) 
+            if RESTClient.check_link():
+                Print.print_success("AVN Server is avaliable.") 
+        except Exception as e:
+            handle_ex(e)
 
     ############################################
     # Build Network Topology
@@ -59,9 +80,9 @@ class Console(Cmd):
         try:
             Print.print_information("Initialising topology...")
             if len(cmds) == 1:
-                Topology.build(template_file=cmds[0])
+                RESTClient.build(template_file=cmds[0])
             else:
-                Topology.build()
+                RESTClient.build() 
         except Exception as e:
             handle_ex(e)
 
@@ -75,7 +96,7 @@ class Console(Cmd):
         """
         try:
             Print.print_information("Starting network...")
-            Topology.start()
+            RESTClient.start()
         except Exception as e:
             handle_ex(e)
     
@@ -89,7 +110,7 @@ class Console(Cmd):
         """
         try:
             Print.print_information("Restarting virtual machines...")
-            Topology.restart()
+            RESTClient.restart()
         except Exception as e:
             handle_ex(e)
 
@@ -112,9 +133,9 @@ class Console(Cmd):
         # command execution
         try:
             if cmds[0] == 'h':
-                print(create_table(Topology.show_hosts()))
+                print(create_table(RESTClient.host_details()))
             if cmds[0] == 'n':
-                print(create_table(Topology.show_networks()))
+                print(create_table(RESTClient.network_details()))
         except Exception as e:
             handle_ex(e)
 
@@ -135,16 +156,16 @@ class Console(Cmd):
         vmname = "all"
         if len(cmds) == 1:
             vmname = cmds[0]
-        # command executionint.print_information
+        # command execution
         try:
-            Topology.shell(vmname)
+            print("SHELL FUNCTIONALITY TO BE COMPLETED FOR REMOTE CLIENT")
         except Exception as e:
             handle_ex(e)
 
     ############################################
     # Distribute Keys
     ############################################
-    
+
     def do_keys(self, cmd):
         """
         Distribute SSH keys to hosts.
@@ -154,7 +175,7 @@ class Console(Cmd):
         """
         # command validation
         cmds = cmd.split()
-        if len(cmds) != 1:
+        if len(cmds) > 1:
             Print.print_warning("Invalid number of arguments, see 'help keys'")
             return
         vmname = "all"
@@ -163,7 +184,7 @@ class Console(Cmd):
         # command execution
         try:
             Print.print_information("Distributing keys...")
-            Topology.send_keys(cmds[0])
+            RESTClient.send_keys(vmname)
         except Exception as e:
             handle_ex(e)
 
@@ -176,9 +197,7 @@ class Console(Cmd):
         Launch the RestAPI Server.
         """
         try:
-            Print.print_information("Starting RestAPI server...")
-            self.server = RESTServer()
-            self.server.start()
+            Print.print_warning("Running as remote client, RestAPI server not applicable.")
         except Exception as e:
             handle_ex(e)
 
@@ -194,7 +213,7 @@ class Console(Cmd):
             Print.print_information("Destroying network...")
             # if self.server:
             #     self.server.stop()
-            Topology.destroy()
+            RESTClient.destroy()
         except Exception as e:
             handle_ex(e)
 
@@ -207,10 +226,6 @@ class Console(Cmd):
         Exit the application
         """
         try:
-            # Stop the rest api if running
-            if self.server:
-                self.server.stop()
-
             # Check if there are any hosts, if not then exit without asking to destroy
             Hosts().get_all()
 
