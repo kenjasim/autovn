@@ -13,6 +13,13 @@ class Networks():
         if networks:
             return networks
         raise Exception("No networks in database")
+    
+    @classmethod
+    def get_ipaddr(self, netaddr):
+        """Return networks with given ip address"""
+        network = Session.query(Network).filter_by(netaddr=netaddr).first() 
+        if network:
+            return network
 
     @classmethod
     def get_deployment(self, deployment_id):

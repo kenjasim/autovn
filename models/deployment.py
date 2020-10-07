@@ -7,8 +7,12 @@ class Deployment(Base):
     # Define the SQL alchemy model
     __tablename__ = 'deployment'
     id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True)
     hosts = relationship("Host")
     networks = relationship("Network")
+
+    def __init__(self, name):
+        self.name = name
 
     def write_to_db(self):
         """

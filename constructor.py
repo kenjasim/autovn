@@ -41,78 +41,111 @@ class Constructor():
             hosts - dictionary of created hosts
         """
         # Read the network and host files
-        self.create_deployment()
+        deployment_name = self.create_deployment()
 
-        self.read_networks()
-        self.read_hosts()
+        self.build_networks(deployment_name)
+        self.build_hosts(deployment_name)
 
         self.add_to_db()
 
     def create_deployment(self):
-        d = Deployment()
-        Deployments().post(d)
-        Print.print_information("Building deployment with id {0}".format(Deployments().get_last().id))
-
-    def read_networks(self):
         """
-        Reads the network information from the template.
+        Initialise deployment for grouping host-network topologies. 
+        """
+        if "deployment" in self.template:
+            name = self.template['deployment']['name']
+            d = Deployment(name)
+            Deployments().post(d)
+            Print.print_information("Building deployment: " + name)
+        return name
+
+    def build_networks(self, deployment_name):
+        """
+        Reads the network information from the template 
         """
         # Read the network information and catch if it doesnt exist
-
         
         if "networks" in self.template:
             networks = self.template['networks']
-
-            try:
-                # Loop through the networks and collect the information
-                for label, values in networks.items():
-                    # Else, create network
-                    if "netaddr" and "dhcplower" and "dhcpupper" in values:
-                        d = Deployments.get_last()
-                        self.networks[label] = Network(label, values["netaddr"], values["dhcplower"], values["dhcpupper"], d.id)
-            except Exception as e:
-                Print.print_error("Aborting import due to {0}".format(e))
-                Print.print_information("Performing cleanup...")
-                self.clean_up()
+            # Loop through the networks and collect the information
+            for label, values in networks.items():
+                # Validate template and network address 
+                if self.is_valid_net_template(values) and self.is_valid_net_addr(values["netaddr"]): 
+                    # Build the network 
+                    deployment_id = Deployments.get_by_name(deployment_name).id
+                    self.networks[label] = Network(label, values["netaddr"], values["dhcplower"], values["dhcpupper"], deployment_id)
+                else: 
+                    Print.print_error("Failed network template checks.")             
         else:
             raise Exception("No network information in template")
 
-    def read_hosts(self):
+    def build_hosts(self, deployment_name):
         """
-        Reads the network information from the template.
+        Creates the host virtual machines from the template. 
         """
         # Read the hosts information and catch if it doesnt exist
 
         if "hosts" in self.template:
             hosts = self.template['hosts']
 
-            try:
-                # Loop through the hosts and collect the information
-                for vmname, values in hosts.items():
-                    # Else, create host
+            # Loop through the hosts and collect the information
+            for vmname, values in hosts.items():
+                # Validate template and host name
+                if self.is_valid_host_template(values) and self.is_valid_host_vname(vmname): 
                     
-                        if "image" and "username" and "password" and "networks" and "internet_access" in values:
-                            d = Deployments.get_last()
-                            self.hosts[vmname] = Host(vmname, values["image"], values["username"], values["password"], d.id)
-
-                            # Manage network assignments
-                            networks = values["networks"]
-                            # Assign the network access if that is required
-                            if values["internet_access"]:
-                                networks.insert(0, "Internet")
-                                self.hosts[vmname].assign_internet(1)
-                            # Loop through rest of list and assign adapter
-                            for index, networklabel in enumerate(networks):
-                                # Check if its in the list and that the adapters havent gone over 8
-                                if networklabel in networks and index + 1 < 8 and networklabel != "Internet":
-                                    self.hosts[vmname].assign_network(index+1, self.networks[networklabel].get_name())
-                            # Save hosts to the database
-            except Exception as e:
-                Print.print_error("Aborting import due to {0}".format(e))
-                Print.print_information("Performing cleanup...")
-                self.clean_up()
+                    # Build the host
+                    deployment_id = Deployments.get_by_name(deployment_name).id
+                    self.hosts[vmname] = Host(vmname, values["image"], values["username"], values["password"], deployment_id)
+                    
+                    # Manage network assignments
+                    networks = values["networks"]
+                    # Assign the network access if that is required
+                    if values["internet_access"]:
+                        # Assign internet to the very first adapter 
+                        networks.insert(0, "Internet")
+                        self.hosts[vmname].assign_internet(1)
+                    # Loop through rest of list and assign adapter
+                    for index, networklabel in enumerate(networks):
+                        # Check if its in the list and that the adapters havent gone over 8
+                        if networklabel in networks and index + 1 < 8 and networklabel != "Internet":
+                            self.hosts[vmname].assign_network(index+1, self.networks[networklabel].get_name())
+                else: 
+                    Print.print_error("Failed host template checks.")    
         else:
             Print.print_error("No host information in template")
+
+    def is_valid_net_template(self, values): 
+        """
+        Check all values are present. 
+        """ 
+        if "netaddr" and "dhcplower" and "dhcpupper" in values:
+            return True 
+        return False
+
+    def is_valid_net_addr(self, netaddr):
+        """
+        Check netaddr is unique.
+        """
+        if Networks.get_ipaddr(netaddr=netaddr): 
+            return False
+        return True
+
+    def is_valid_host_template(self, values): 
+        """
+        Check all values are present. 
+        """ 
+        if "image" and "username" and "password" and "networks" and "internet_access" in values:
+            return True 
+        return False
+
+    def is_valid_host_vname(self, vmname):
+        """
+        Check vmname is unique.
+        """
+        if Hosts.get_vmname(vmname=vmname): 
+            return False
+        return True
+
 
     def clean_up(self):
         """

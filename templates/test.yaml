@@ -1,4 +1,8 @@
 ---
+# Deploymnet Configuration
+deployment: 
+  name: test2
+
 # Network Configuration
 networks:
   hoif1:

@@ -1,3 +1,7 @@
+# Deploymnet Configuration
+deployment: 
+  name: cyber
+
 # Network Configuration
 networks:
   hoif1:

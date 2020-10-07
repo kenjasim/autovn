@@ -22,4 +22,10 @@ class Deployments():
         deployment = Session.query(Deployment).filter_by(id=deployment_id).first()
         if deployment:
             deployment.delete_from_db()
+    
+    @staticmethod
+    def get_by_name(name): 
+        """Get the deployment matched by name"""
+        deployment = Session.query(Deployment).filter_by(name=name).first()
+        return deployment
         
