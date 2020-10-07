@@ -1,4 +1,5 @@
 from models.host import Host
+from models.deployment import Deployment
 from db import Session
 
 class Hosts():
@@ -22,6 +23,15 @@ class Hosts():
             return hosts
         else:
             return None
+
+    @classmethod
+    def get_deployment_by_name(self, deployment_name):
+        """Return all hosts with a fiven deployment id"""
+        deployment = Session.query(Deployment).filter_by(name=deployment_name).first()
+        if deployment:
+            hosts = Session.query(Host).filter_by(deployment_id=deployment.id).all()
+            if hosts:
+                return hosts
 
     @classmethod
     def get_vmname(self, vmname):

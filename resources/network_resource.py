@@ -1,4 +1,5 @@
 from models.network import Network
+from models.deployment import Deployment
 from db import Session
 
 class Networks():
@@ -29,6 +30,15 @@ class Networks():
             return networks
         else:
             return None
+
+    @classmethod
+    def get_deployment_by_name(self, deployment_name):
+        """Return all hosts with a fiven deployment id"""
+        deployment = Session.query(Deployment).filter_by(name=deployment_name).first()
+        if deployment:
+            networks = Session.query(Network).filter_by(deployment_id=deployment.id).all()
+            if networks:
+                return networks
 
     @classmethod
     def post(self, network):

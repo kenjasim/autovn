@@ -40,13 +40,29 @@ class Constructor():
             network - Dictionary of created networks
             hosts - dictionary of created hosts
         """
+        deployment_name = None
         # Read the network and host files
-        deployment_name = self.create_deployment()
+        try:
+            deployment_name = self.create_deployment()
+            self.build_networks(deployment_name)
+            self.build_hosts(deployment_name)
+            self.add_to_db()
+        except Exception as e:
+            Print.print_error("Build aborted with reason: {0}".format(e))
+            Print.print_information("Cleaning build...")
 
-        self.build_networks(deployment_name)
-        self.build_hosts(deployment_name)
+            # Clear up any built networks
+            self.clear_up_networks()
 
-        self.add_to_db()
+            # Clear up any built VMs
+            self.clear_up_hosts()
+
+            # Clear the deployment from the db
+            if deployment_name:
+                Print.print_information("Cleaning database...")
+                self.clear_up_database(deployment_name)
+                
+
 
     def create_deployment(self):
         """
@@ -54,10 +70,13 @@ class Constructor():
         """
         if "deployment" in self.template:
             name = self.template['deployment']['name']
-            d = Deployment(name)
-            Deployments().post(d)
-            Print.print_information("Building deployment: " + name)
-        return name
+
+            #Check if the name is unique (not already in db)
+            if self.is_valid_deployment_name(name):
+                d = Deployment(name)
+                Deployments().post(d)
+                Print.print_information("Building deployment: " + name)
+                return name
 
     def build_networks(self, deployment_name):
         """
@@ -73,9 +92,7 @@ class Constructor():
                 if self.is_valid_net_template(values) and self.is_valid_net_addr(values["netaddr"]): 
                     # Build the network 
                     deployment_id = Deployments.get_by_name(deployment_name).id
-                    self.networks[label] = Network(label, values["netaddr"], values["dhcplower"], values["dhcpupper"], deployment_id)
-                else: 
-                    Print.print_error("Failed network template checks.")             
+                    self.networks[label] = Network(label, values["netaddr"], values["dhcplower"], values["dhcpupper"], deployment_id)         
         else:
             raise Exception("No network information in template")
 
@@ -107,28 +124,43 @@ class Constructor():
                     # Loop through rest of list and assign adapter
                     for index, networklabel in enumerate(networks):
                         # Check if its in the list and that the adapters havent gone over 8
-                        if networklabel in networks and index + 1 < 8 and networklabel != "Internet":
+                        if networklabel in self.networks and index + 1 < 8 and networklabel != "Internet":
                             self.hosts[vmname].assign_network(index+1, self.networks[networklabel].get_name())
-                else: 
-                    Print.print_error("Failed host template checks.")    
+                        else:
+                            raise Exception("Error assigning network adapter, please check template file")
         else:
             Print.print_error("No host information in template")
 
+    def is_valid_deployment_name(self, deployment_name):
+        """
+        Check if the deployment name is in the database, if present raise an exception
+
+        Keyword Arguments
+            deployment_name - the name to check
+        """
+
+        if Deployments.get_by_name(deployment_name) == None:
+            return True
+
+        raise Exception("Deployment name {0} is already in use".format(deployment_name))
+        
     def is_valid_net_template(self, values): 
         """
         Check all values are present. 
         """ 
         if "netaddr" and "dhcplower" and "dhcpupper" in values:
             return True 
-        return False
+        
+        raise Exception("Network template invalid. Please ensure all fields are present")
 
     def is_valid_net_addr(self, netaddr):
         """
         Check netaddr is unique.
         """
-        if Networks.get_ipaddr(netaddr=netaddr): 
-            return False
-        return True
+        if Networks.get_ipaddr(netaddr=netaddr) == None: 
+            return True
+        
+        raise Exception("Network address already used. Please change in template")
 
     def is_valid_host_template(self, values): 
         """
@@ -136,27 +168,63 @@ class Constructor():
         """ 
         if "image" and "username" and "password" and "networks" and "internet_access" in values:
             return True 
-        return False
+        
+        raise Exception("Host template invalid. Please ensure all fields are present")
 
     def is_valid_host_vname(self, vmname):
         """
         Check vmname is unique.
         """
-        if Hosts.get_vmname(vmname=vmname): 
-            return False
-        return True
+        if Hosts.get_vmname(vmname=vmname) == None: 
+            return True
+        
+        raise Exception("Virtual machine name already used. Please change in template")
+
+    def clear_up_networks(self):
+        """
+        Clear from virtualbox any built networks
+        """
+        for network in self.networks.values():
+            network.destroy()
+
+    def clear_up_hosts(self):
+        """
+        Clear from virtualbox any built hosts
+        """
+        for host in self.hosts.values():
+            host.destroy()
+
+    def clear_up_database(self, deployment_name):
+        """
+        Clear from virtualbox any built hosts
+        """
+        # Get any networks writen to the database
+        networks = Networks().get_deployment_by_name(deployment_name)
+
+        # Remove from database
+        if networks:
+            for network in networks:
+                Networks().delete(network)
+
+        # Get any hosts writen to the database
+        hosts = Hosts().get_deployment_by_name(deployment_name)
+
+        # Remove from database
+        if hosts:
+            for host in hosts:
+                Hosts().delete(host)
+
+        # Remove Deployment
+        Deployments().delete_by_name(deployment_name)
 
     def add_to_db(self):
         """
         Add the networks and hosts to the database
         """
-        try:
-            for network in self.networks.values():
-                # Add network to db
-                Networks().post(network)
-            for host in self.hosts.values():
-                # Destroy the hosts
-                Hosts().post(host)
-        except Exception as e:
-            Print.print_error("Aborting import due to {0}".format(e))
+        for network in self.networks.values():
+            # Add network to db
+            Networks().post(network)
+        for host in self.hosts.values():
+            # Destroy the hosts
+            Hosts().post(host)
         
