@@ -146,37 +146,6 @@ class Constructor():
             return False
         return True
 
-
-    def clean_up(self):
-        """
-        If there is an error in importing then clean up any created objects
-        """    
-        for network in self.networks.values():
-            # Destroy the network
-            network.destroy()
-        
-        for host in self.hosts.values():
-            # Destroy the hosts
-            host.destroy()
-
-        deployment_id = Deployments().get_last().id
-
-        networks = Networks().get_deployment(deployment_id)
-        if networks:
-            # Delete host database entry
-            for network in networks:
-                Networks().delete(network)
-
-
-        hosts = Hosts().get_deployment(deployment_id)
-        if hosts:
-            # Delete host database entry
-            for host in hosts:
-                Hosts().delete(host)
-
-        # Delete deployment
-        Deployments().delete_by_id(Deployments().get_last().id)
-
     def add_to_db(self):
         """
         Add the networks and hosts to the database
@@ -190,6 +159,4 @@ class Constructor():
                 Hosts().post(host)
         except Exception as e:
             Print.print_error("Aborting import due to {0}".format(e))
-            Print.print_information("Performing cleanup...")
-            self.clean_up()
         
