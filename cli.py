@@ -82,7 +82,7 @@ class Console(Cmd):
         """
         Start virtual machines within a deployment.
 
-        start <deployment-id>    
+        start <deployment-name>    
         """
         # command validation
         cmds = cmd.split()
@@ -103,7 +103,7 @@ class Console(Cmd):
         """
         Restart the virtual machines within a deployment.
 
-        restart <deployment-id>  
+        restart <deployment-name>  
         """
         cmds = cmd.split()
         if len(cmds) != 1:
@@ -173,7 +173,7 @@ class Console(Cmd):
         """
         Distribute SSH keys to all hosts within a deployment.
 
-        keys <deployment-id> 
+        keys <deployment-name> 
         """
         # command validation
         cmds = cmd.split()
@@ -214,7 +214,7 @@ class Console(Cmd):
         """
         Destroy the vms and network interfaces within a deployment.
 
-        destroy <deployment-id>
+        destroy <deployment-name>
         """
         # command validation
         cmds = cmd.split()

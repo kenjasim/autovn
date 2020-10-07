@@ -34,12 +34,12 @@ class Topology():
         Constructor(template_file).parse()
     
     @staticmethod
-    def start(deployment_id):
+    def start(deployment_name):
         """
         Start virtual network and machines.
         """
         # Get the hosts from the database
-        hosts = Hosts().get_deployment(deployment_id)
+        hosts = Hosts().get_deployment_by_name(deployment_name)
         if hosts:
             # Start the thread executor
             executor = ThreadPoolExecutor(max_workers=len(hosts))
@@ -53,17 +53,17 @@ class Topology():
             for thread in threads:
                 thread.result()
             # Poll hosts for IP assignment
-            Topology.poll_ips(deployment_id)
+            Topology.poll_ips(deployment_name)
         else:
-            Print.print_error("No Deployment with id {id}".format(id=deployment_id))
+            Print.print_error("No Deployment with name {name}".format(name=deployment_name))
 
     @staticmethod
-    def poll_ips(deployment_id, timeout=30):
+    def poll_ips(deployment_name, timeout=30):
         """
         Poll hosts for IP assignment.
         """
         # Get the hosts from the database
-        hosts = Hosts().get_deployment(deployment_id)
+        hosts = Hosts().get_deployment_by_name(deployment_name)
         if hosts:
             t = time.time()
             while time.time() - t < timeout and len(hosts) > 0:
@@ -74,14 +74,14 @@ class Topology():
             if len(hosts) > 0:
                 Print.print_warning("Timeout, IP addresses not yet assigned.")
         else:
-            Print.print_error("No Deployment with id {id}".format(id=deployment_id))
+            Print.print_error("No Deployment with name {name}".format(name=deployment_name))
 
     @staticmethod
-    def stop(deployment_id):
+    def stop(deployment_name):
         """
         Shutdown virtual machines.
         """
-        hosts = Hosts().get_deployment(deployment_id)
+        hosts = Hosts().get_deployment_by_name(deployment_name)
         if hosts:
             # Start the thread executor
             executor = ThreadPoolExecutor(max_workers=3)
@@ -94,15 +94,15 @@ class Topology():
             for thread in threads:
                 thread.result()
         else:
-            Print.print_error("No Deployment with id {id}".format(id=deployment_id))
+            Print.print_error("No Deployment with name {name}".format(name=deployment_name))
 
     
     @staticmethod
-    def restart(deployment_id):
+    def restart(deployment_name):
         """
         Restart virtual machines.
         """
-        hosts = Hosts().get_deployment(deployment_id)
+        hosts = Hosts().get_deployment_by_name(deployment_name)
         if hosts:
              # Start the thread executor
             executor = ThreadPoolExecutor(max_workers=len(hosts))
@@ -115,20 +115,20 @@ class Topology():
             for thread in threads:
                 thread.result()
         else:
-            Print.print_error("No Deployment with id {id}".format(id=deployment_id))
+           Print.print_error("No Deployment with name {name}".format(name=deployment_name))
 
        
 
     @staticmethod
-    def destroy(deployment_id):
+    def destroy(deployment_name):
         """
         Permanently delete all virtual machines and networks.
         """
-        hosts = Hosts().get_deployment(deployment_id)
+        hosts = Hosts().get_deployment_by_name(deployment_name)
         if hosts:
 
             # Ensure all virtual machines are powered down
-            Topology.stop(deployment_id)
+            Topology.stop(deployment_name)
             # Start the thread executor
             executor = ThreadPoolExecutor(max_workers=len(hosts))
             threads = []
@@ -147,7 +147,7 @@ class Topology():
                 Session.commit()
 
             # Get the networks from the database
-            networks = Networks().get_deployment(deployment_id)
+            networks = Networks().get_deployment_by_name(deployment_name)
 
             if networks:
                 # Start the thread executor
@@ -168,9 +168,9 @@ class Topology():
                     Session.commit()
 
             # Delete deployment
-            Deployments().delete_by_id(deployment_id)
+            Deployments().delete_by_name(deployment_name)
         else:
-            Print.print_error("No Deployment with id {id}".format(id=deployment_id))
+            Print.print_error("No Deployment with name {name}".format(name=deployment_name))
 
     @staticmethod
     def host_details():
@@ -187,7 +187,7 @@ class Topology():
             s["vmname"] = host.vmname
             s.update(host.properties())
             del s['nics']
-            s['deployment'] = host.deployment_id
+            s['deployment'] = Deployments.get_by_id(host.deployment_id).name
             data.append(s)
        
         return data
@@ -211,6 +211,7 @@ class Topology():
                 n["netname"] = nics[nic]["netname"]
                 n["mac"] = nics[nic]["mac"]
                 n["ip"] = nics[nic]["ip"]
+                n['deployment'] = Deployments.get_by_id(host.deployment_id).name
                 data.append(n)
         return data
 
@@ -229,16 +230,16 @@ class Topology():
             raise Exception("Unknown vmname entered.")
 
     @staticmethod
-    def send_keys(deployment_id):
+    def send_keys(deployment_name):
         """
         Distribute SSH public keys to hosts.
         """
-        hosts = Hosts().get_deployment(deployment_id)
+        hosts = Hosts().get_deployment_by_name(deployment_name)
         if hosts:
             for host in hosts:
                 host.dist_pkey()
         else:
-            Print.print_error("No Deployment with id {id}".format(id=deployment_id))
+            Print.print_error("No Deployment with name {name}".format(name=deployment_name))
 
         
 
