@@ -9,7 +9,7 @@ from autossh import ssh_shell
 from print_colours import Print
 
 # Create ObjectRelationalModel (ORM) base class
-from sqlalchemy import Column, Integer, String, Sequence
+from sqlalchemy import Column, Integer, String, Sequence, ForeignKey
 from db import Base
 from db import Session
 
@@ -21,12 +21,13 @@ class Host(Base):
     image = Column(String)
     username = Column(String)
     password = Column(String)
+    deployment_id = Column(Integer, ForeignKey('deployment.id'))
 
     def __repr__(self):
-        return "<Host(vmname='%s', image='%s', username='%s', password='%s')>" % (
-            self.vmname, self.image, self.username, self.password)
+        return "<Host(vmname='%s', image='%s', username='%s', password='%s', deployment_id='%s')>" % (
+            self.vmname, self.image, self.username, self.password, self.deployment_id)
 
-    def __init__(self, vmname, image, username, password):
+    def __init__(self, vmname, image, username, password, deployment_id):
         """
         Initialises Ubuntu Server 20.04 virtual machine via VirtualBox
         Options:
@@ -39,6 +40,7 @@ class Host(Base):
         self.image = image
         self.username = username
         self.password = password
+        self.deployment_id = deployment_id
         # Check if image template or vmname already exists
         if self.check_exists(image):
             raise Exception("Template image already exists, unable to duplicate")
@@ -46,6 +48,9 @@ class Host(Base):
             raise Exception("VM image with assigned name already exists")
         # Import image into VirtualBox
         self.import_image()
+
+        # Write to database
+        self.write_to_db()
 
 
     @classmethod
