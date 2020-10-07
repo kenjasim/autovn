@@ -80,7 +80,7 @@ def destroy():
 @app.route('/details/hosts', methods=['GET'])
 def host_details():
     try:
-        host_data = Topology.show_hosts()
+        host_data = Topology.host_details()
         return (jsonify(host_data), 200)
     except Exception as e:
         handle_ex(e)
@@ -89,7 +89,7 @@ def host_details():
 @app.route('/details/networks', methods=['GET'])
 def network_details():
     try:
-        network_data = Topology.show_networks()
+        network_data = Topology.network_details()
         return (jsonify(network_data), 200)
     except Exception as e:
         handle_ex(e)

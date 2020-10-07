@@ -173,7 +173,7 @@ class Topology():
             Print.print_error("No Deployment with id {id}".format(id=deployment_id))
 
     @staticmethod
-    def show_hosts():
+    def host_details():
         """
         Return summary of all host properties.
         """
@@ -193,7 +193,7 @@ class Topology():
         return data
 
     @staticmethod
-    def show_networks():
+    def network_details():
         """
         Return summary of all host-network configurations.
         """
