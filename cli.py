@@ -91,7 +91,7 @@ class Console(Cmd):
             return
         try:
             Print.print_information("Starting network...")
-            self.client.start()
+            self.client.start(cmds[0])
         except Exception as e:
             handle_ex(e)
     
@@ -111,7 +111,7 @@ class Console(Cmd):
             return
         try:
             Print.print_information("Restarting virtual machines...")
-            self.client.restart()
+            self.client.restart(cmds[0])
         except Exception as e:
             handle_ex(e)
 
@@ -161,7 +161,7 @@ class Console(Cmd):
         # command execution
         Print.print_information("Establishing shell...")
         try:
-            self.client.shell(vmname)
+            self.client.shell(cmds[0])
         except Exception as e:
             handle_ex(e)
 
@@ -184,7 +184,7 @@ class Console(Cmd):
         # command execution
         try:
             Print.print_information("Distributing keys...")
-            self.client.send_keys(vmname)
+            self.client.send_keys(cmds[0])
         except Exception as e:
             handle_ex(e)
 
@@ -226,7 +226,7 @@ class Console(Cmd):
             Print.print_information("Destroying network...")
             # if self.server:
             #     self.server.stop()
-            self.client.destroy()
+            self.client.destroy(cmds[0])
         except Exception as e:
             handle_ex(e)
 

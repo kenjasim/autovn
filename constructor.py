@@ -124,8 +124,10 @@ class Constructor():
                     # Loop through rest of list and assign adapter
                     for index, networklabel in enumerate(networks):
                         # Check if its in the list and that the adapters havent gone over 8
-                        if networklabel in self.networks and index + 1 < 8 and networklabel != "Internet":
-                            self.hosts[vmname].assign_network(index+1, self.networks[networklabel].get_name())
+                        if networklabel == "Internet":
+                            continue
+                        elif networklabel in self.networks and index + 1 < 8:
+                                self.hosts[vmname].assign_network(index+1, self.networks[networklabel].get_name())
                         else:
                             raise Exception("Error assigning network adapter, please check template file")
         else:

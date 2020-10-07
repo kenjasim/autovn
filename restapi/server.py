@@ -11,7 +11,7 @@ app.debug = False
 app.use_reloader = False
 
 logging.basicConfig(level=logging.DEBUG,
-                            filename='tmp/avn_api.log',
+                            filename='tmp/avn.log',
                             format='%(asctime)s, %(levelname)s, %(name)s, %(message)s')
 
 logger = logging.getLogger()
@@ -61,7 +61,7 @@ def restart(deployment_name):
 @app.route('/keys/<string:deployment_name>', methods=['PUT'])
 def keys(deployment_name):
     try:
-        threading.Thread(target=Topology.send_keys, args=[deployment_name]).start()
+        threading.Thread(target=Topology.send_keys, args=(deployment_name, )).start()
         return ("Network keys request accepted", 202)
     except Exception as e:
         handle_ex(e)
