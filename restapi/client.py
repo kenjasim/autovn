@@ -28,41 +28,41 @@ class RESTClient(object):
             raise Exception("Failed to deploy topology: " + r.text)
     
     @staticmethod
-    def start(): 
+    def start(deployment_name): 
         """
         Request AVN Rest API to start virtual host machines.  
         """
-        url = RESTClient.server_url + "start"
+        url = RESTClient.server_url + "start/" + deployment_name
         r = requests.put(url)
         if r.status_code != 202:
             raise Exception("Failed to start topology: " + r.text)
     
     @staticmethod
-    def restart(): 
+    def restart(deployment_name): 
         """
         Request AVN Rest API to restart virtual host machines.  
         """
-        url = RESTClient.server_url + "restart"
+        url = RESTClient.server_url + "restart/" + deployment_name 
         r = requests.put(url)
         if r.status_code != 202:
             raise Exception("Failed to start topology: " + r.text)
     
     @staticmethod
-    def send_keys(host): 
+    def send_keys(deployment_name): 
         """
         Request AVN Rest API to generate and distribute SSH keys.  
         """
-        url = RESTClient.server_url + "keys/" + host
+        url = RESTClient.server_url + "keys/" + deployment_name
         r = requests.put(url)
         if r.status_code != 202:
             raise Exception("Failed to distribute keys: " + r.text)
     
     @staticmethod
-    def destroy(): 
+    def destroy(deployment_name): 
         """
         Request AVN Rest API to destroy the topology. 
         """
-        url = RESTClient.server_url + "destroy"
+        url = RESTClient.server_url + "destroy/" + deployment_name
         r = requests.delete(url)
         if r.status_code != 202:
             raise Exception("Failed to destroy topology: " + r.text)

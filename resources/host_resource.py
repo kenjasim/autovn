@@ -1,4 +1,5 @@
 from models.host import Host
+from models.deployment import Deployment
 from db import Session
 
 class Hosts():
@@ -13,6 +14,24 @@ class Hosts():
         if hosts:
             return hosts
         raise Exception("No hosts in database")
+
+    @classmethod
+    def get_deployment(self, deployment_id):
+        """Return all hosts with a fiven deployment id"""
+        hosts = Session.query(Host).filter_by(deployment_id=deployment_id).all()
+        if hosts:
+            return hosts
+        else:
+            return None
+
+    @classmethod
+    def get_deployment_by_name(self, deployment_name):
+        """Return all hosts with a fiven deployment id"""
+        deployment = Session.query(Deployment).filter_by(name=deployment_name).first()
+        if deployment:
+            hosts = Session.query(Host).filter_by(deployment_id=deployment.id).all()
+            if hosts:
+                return hosts
 
     @classmethod
     def get_vmname(self, vmname):
@@ -43,3 +62,9 @@ class Hosts():
         host = Session.query(Host).filter_by(vmname=vmname).first()
         if host:
             return host.get_ip()
+
+    @classmethod
+    def delete(self, host):
+        """Delete a host from the database"""
+        Session.delete(host)
+        Session.commit()

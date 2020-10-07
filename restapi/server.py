@@ -11,7 +11,7 @@ app.debug = False
 app.use_reloader = False
 
 logging.basicConfig(level=logging.DEBUG,
-                            filename='tmp/avn_api.log',
+                            filename='tmp/avn.log',
                             format='%(asctime)s, %(levelname)s, %(name)s, %(message)s')
 
 logger = logging.getLogger()
@@ -38,40 +38,40 @@ def build(template="default.yaml"):
 
 @app.route('/', methods=['GET'])
 def check():
-    return ("Server avaliable.", 200)
+    return ("<h1>Server avaliable.</h1>", 200)
 
-@app.route('/start', methods=['PUT'])
-def start():
+@app.route('/start/<string:deployment_name>', methods=['PUT'])
+def start(deployment_name):
     try:
-        threading.Thread(target=Topology.start).start()
+        threading.Thread(target=Topology.start, args=(deployment_name, )).start()
         return ("Network start request accepted", 202)
     except Exception as e:
         handle_ex(e)
         return ("Error", 500)
 
-@app.route('/restart', methods=['PUT'])
-def restart():
+@app.route('/restart/<string:deployment_name>', methods=['PUT'])
+def restart(deployment_name):
     try:
-        threading.Thread(target=Topology.restart).start()
+        threading.Thread(target=Topology.restart, args=(deployment_name, )).start()
         return ("Network restart request accepted", 202)
     except Exception as e:
         handle_ex(e)
         return ("Error", 500)
 
-@app.route('/keys/<string:host>', methods=['PUT'])
-def keys(host):
+@app.route('/keys/<string:deployment_name>', methods=['PUT'])
+def keys(deployment_name):
     try:
-        threading.Thread(target=Topology.send_keys, args=[host]).start()
+        threading.Thread(target=Topology.send_keys, args=(deployment_name, )).start()
         return ("Network keys request accepted", 202)
     except Exception as e:
         handle_ex(e)
         return ("Error", 500)
 
     
-@app.route('/destroy', methods=['DELETE'])
-def destroy():
+@app.route('/destroy/<string:deployment_name>', methods=['DELETE'])
+def destroy(deployment_name):
     try:
-        threading.Thread(target=Topology.destroy).start()
+        threading.Thread(target=Topology.destroy, args=(deployment_name, )).start()
         return ("Network destroy request accepted", 202)
     except Exception as e:
         handle_ex(e)

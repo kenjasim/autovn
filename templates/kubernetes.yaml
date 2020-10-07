@@ -1,4 +1,8 @@
 ---
+# Deploymnet Configuration
+deployment: 
+  name: kubernetes
+
 # Network Configuration
 networks:
   hoif1:
