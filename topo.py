@@ -240,6 +240,18 @@ class Topology():
                 host.dist_pkey()
         else:
             Print.print_error("No Deployment with name {name}".format(name=deployment_name))
+    
+    @staticmethod
+    def start_ssh_forwarder(deployment_name):
+        """
+        Start ssh forwarder server for connection to vm through host machine. 
+        """
+        hosts = Hosts().get_deployment_by_name(deployment_name)
+        if hosts:
+            for host in hosts:
+                host.ssh_forwarder() 
+        else:
+            Print.print_error("No Deployment with name {name}".format(name=deployment_name))
 
         
 

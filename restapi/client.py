@@ -2,6 +2,7 @@
 
 import requests
 from pathlib import Path
+from autossh import ssh_shell
 
 class RESTClient(object): 
     """
@@ -94,15 +95,30 @@ class RESTClient(object):
         return data 
 
     @staticmethod
-    def shell(vmname='all'):
+    def shell(vmname, server_ip, username, password):
         """
         Create an SSH shell terminal sessions with each host.
         Support for Mac only.
         Options:
             vmname: name of rm to create shell session for
+            server_ip: ip address of the host machine 
+            username: virtual host's username 
+            password: virtual host's password
         """
-        print("SHELL FUNCTIONALITY TO BE COMPLETED FOR REMOTE CLIENT")
-
+        # Get the ssh_remote_port of the virtual machine
+        port = None
+        url = RESTClient.server_url + "host/" + vmname + "/ssh_port"
+        r = requests.get(url)
+        if r.status_code != 200:
+            raise Exception("Failed to GET ssh_remote_port: " + r.text)
+        for data in r.json(): 
+            if "port" not in data.keys():
+                raise Exception("Failed to GET ssh_remote_port2: " + r.text)
+            else:
+                port = data["port"]
+        # Open SSH session through new terminal
+        shell = ssh_shell.Shell()
+        shell.connect(hostname=username, hostaddr=server_ip, password=password, hostport=port)
     
     @staticmethod
     def get_hosts(): 

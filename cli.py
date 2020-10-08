@@ -143,7 +143,7 @@ class Console(Cmd):
             handle_ex(e)
 
     ############################################
-    # Open Shells
+    # Open Shell with a host 
     ############################################
 
     def do_shell(self, cmd):
@@ -162,6 +162,29 @@ class Console(Cmd):
         Print.print_information("Establishing shell...")
         try:
             self.client.shell(cmds[0])
+        except Exception as e:
+            handle_ex(e)
+    
+    ############################################
+    # Open remote shell with a host 
+    ############################################
+
+    def do_rshell(self, cmd):
+        """
+        Start shell session with vm.
+
+        shell <vmname> <server_ip> <username> <password> 
+        """
+        # command validation
+        cmds = cmd.split()
+        if len(cmds) != 4:
+            Print.print_warning("Invalid number of arguments, see 'help show'")
+            return
+        
+        # command execution
+        Print.print_information("Establishing shell...")
+        try:
+            self.client.shell(cmds[0], cmds[1], cmds[2], cmds[3])
         except Exception as e:
             handle_ex(e)
 
@@ -185,6 +208,29 @@ class Console(Cmd):
         try:
             Print.print_information("Distributing keys...")
             self.client.send_keys(cmds[0])
+        except Exception as e:
+            handle_ex(e)
+
+    ############################################
+    # SSH Forwarder 
+    ############################################
+    
+    def do_sshforward(self, cmd):
+        """
+        Startup SSH forwarders for remote host ssh connection
+
+        keys <deployment-name> 
+        """
+        # command validation
+        cmds = cmd.split()
+        if len(cmds) != 1:
+            Print.print_warning("Invalid number of arguments, see 'help sshforward'")
+            return
+
+        # command execution
+        try:
+            Print.print_information("Starting SSH forwarder server...")
+            self.client.start_ssh_forwarder(cmds[0])
         except Exception as e:
             handle_ex(e)
 

@@ -122,6 +122,15 @@ def get_ip(vmname):
         handle_ex(e)
         return ("Error", 500)
 
+@app.route('/host/<string:vmname>/ssh_port', methods=['GET'])
+def get_ssh_remote_port(vmname):
+    try:
+        port = Hosts().get_ssh_remote_port(vmname)
+        return jsonify([{'port': port}]), 200
+    except Exception as e:
+        handle_ex(e)
+        return ("Error", 500)
+
 
 class RESTServer(object):
 
