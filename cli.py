@@ -287,11 +287,14 @@ class Console(Cmd):
 
     def do_stopsshforwarding(self, cmd):
         """
-        TEST
+        Stop the ssh forwarding server per deployment 
+
+        Usage
+        stopsshforwarding <deployment-name>
         """
         # command validation
         cmds = cmd.split()
-        if len(cmds) > 0:
+        if len(cmds) != 1:
             Print.print_warning("Invalid number of arguments, see 'help stopsshforwarding'")
             return
 
@@ -299,7 +302,7 @@ class Console(Cmd):
             Print.print_information("Killing ssh forwarding processes...")
             # if self.server:
             #     self.server.stop()
-            self.client.stop_ssh_forwarders()
+            self.client.stop_ssh_forwarders(cmds[0])
         except Exception as e:
             handle_ex(e)
         
@@ -320,6 +323,11 @@ class Console(Cmd):
             # Stop the rest api if running
             if self.server:
                 self.server.stop()
+
+            #If running local client then ensure the records are cleared
+            if not self.remote:
+                for server in SSHForward.get_all():
+                    SSHForward.delete(server)
             
         except Exception as e:
             handle_ex(e)

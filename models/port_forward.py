@@ -3,7 +3,7 @@ import sys, os
 from threading import Thread
 import multiprocessing
 
-from sqlalchemy import Column, Integer, String, Sequence
+from sqlalchemy import Column, Integer, String, Sequence, ForeignKey
 from sqlalchemy.orm import relationship
 from db import Base
 from db import Session
@@ -13,9 +13,11 @@ class PortForward(Base):
     __tablename__ = 'sshforwarder'
     id = Column(Integer, primary_key=True)
     pid = Column(Integer)
+    deployment_id = Column(Integer, ForeignKey('deployment.id'))
 
-    def __init__(self):
+    def __init__(self, deployment_id):
         self.pid = None
+        self.deployment_id = deployment_id
         self.write_to_db()
     
     def start_forwarding_server(self, host_addr='', host_port=2001, dest_addr='', dest_port=22): 

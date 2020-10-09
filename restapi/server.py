@@ -2,8 +2,9 @@ from gevent.pywsgi import WSGIServer, LoggingLogAdapter
 from flask import Flask, Response, jsonify
 import multiprocessing, logging, threading
 from print_colours import Print
+import atexit
 
-from resources import Hosts, Networks
+from resources import Hosts, Networks, SSHForward
 from topo import Topology
 
 app = Flask(__name__)
@@ -149,10 +150,10 @@ def ssh_forward(deployment_name):
         handle_ex(e)
         return ("Error", 500)
 
-@app.route('/stopsshforwarding/', methods=['DELETE'])
-def stop_ssh_forward():
+@app.route('/stopsshforwarding/<string:deployment_name>', methods=['DELETE'])
+def stop_ssh_forward(deployment_name):
     try:
-        Topology.stop_ssh_forwarders()
+        Topology.stop_ssh_forwarders(deployment_name)
         return "SSH forwarding servers stopped", 200
     except Exception as e:
         handle_ex(e)
@@ -171,17 +172,23 @@ class RESTServer(object):
             pass
 
     def start(self):
+        atexit.register(self.do_exit)
         self.http_server = WSGIServer((self.address, self.port), application=app, log=log, error_log=log)
         self.proc = multiprocessing.Process(target=self.http_server.serve_forever)
         self.proc.start()
         if self.address == "": 
             self.address = "127.0.0.1"
         Print.print_success("Server avaliable at: http://" + self.address + ":" + str(self.port) + "/")
+        
 
     def stop(self):
         self.http_server.stop()
         self.http_server.close()
         self.proc.terminate()
+
+    def do_exit(self):
+        for server in SSHForward.get_all():
+            SSHForward.delete(server)
 
 
 

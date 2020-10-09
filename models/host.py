@@ -275,7 +275,7 @@ class Host(Base):
         Run a background server to forward SSH traffic between the host machine
         and the virtual machine. 
         """
-        shell = PortForward()
+        shell = PortForward(self.deployment_id)
         # Find an unassigned port 
         host_port = 2000
         while shell.port_in_use(host_port):
