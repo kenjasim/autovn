@@ -149,6 +149,14 @@ def ssh_forward(deployment_name):
         handle_ex(e)
         return ("Error", 500)
 
+@app.route('/stopsshforwarding/', methods=['DELETE'])
+def stop_ssh_forward():
+    try:
+        Topology.stop_ssh_forwarders()
+        return "SSH forwarding servers stopped", 200
+    except Exception as e:
+        handle_ex(e)
+        return ("Error", 500)
 
 class RESTServer(object):
 
@@ -157,7 +165,10 @@ class RESTServer(object):
         self.port = port
         self.http_server = None
         # https://github.com/pytest-dev/pytest-flask/issues/104
-        multiprocessing.set_start_method("fork")
+        try:
+            multiprocessing.set_start_method("fork")
+        except:
+            pass
 
     def start(self):
         self.http_server = WSGIServer((self.address, self.port), application=app, log=log, error_log=log)

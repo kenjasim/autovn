@@ -4,6 +4,7 @@ import re
 import os
 import time
 from models.network import Network
+from models.port_forward import PortForward
 from tabulate import tabulate
 from autossh import ssh_shell
 from print_colours import Print
@@ -274,7 +275,7 @@ class Host(Base):
         Run a background server to forward SSH traffic between the host machine
         and the virtual machine. 
         """
-        shell = ssh_shell.Shell()
+        shell = PortForward()
         # Find an unassigned port 
         host_port = 2000
         while shell.port_in_use(host_port):

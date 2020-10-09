@@ -10,7 +10,8 @@ import traceback
 from models.network import Network
 from models.host import Host
 from models.deployment import Deployment
-from resources import Hosts, Networks, Deployments
+from models.port_forward import PortForward
+from resources import Hosts, Networks, Deployments, SSHForward
 from constructor import Constructor
 from print_colours import Print
 
@@ -253,7 +254,19 @@ class Topology():
         else:
             Print.print_error("No Deployment with name {name}".format(name=deployment_name))
 
-        
+    @staticmethod
+    def stop_ssh_forwarders():
+        """
+        Stop any running ssh forwardingservers
+        """
+
+        #Loop through the sshforwarders running
+        for server in SSHForward.get_all():
+            try:
+                os.kill(server.pid, 9)
+                SSHForward.delete(server)
+            except Exception as e :
+                handle_ex(e)
 
 
 

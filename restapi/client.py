@@ -139,6 +139,13 @@ class RESTClient(object):
         r = requests.put(url)
         if r.status_code != 200:
             raise Exception("Failed to start SSH server: " + r.text)
+
+    @staticmethod
+    def stop_ssh_forwarders():
+        url = RESTClient.server_url + "stopsshforwarding/"
+        r = requests.delete(url)
+        if r.status_code != 200:
+            raise Exception("Failed to start SSH server: " + r.text)
     
     @staticmethod
     def get_hosts(): 

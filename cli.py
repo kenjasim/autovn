@@ -19,8 +19,9 @@ from restapi.server import RESTServer
 import multiprocessing
 from pathlib import Path
 from tabulate import tabulate
+import threading
 
-from resources import Hosts
+from resources import Hosts, SSHForward
 
 # Log path 
 p = Path().parent.absolute() / "tmp"
@@ -36,6 +37,7 @@ class Console(Cmd):
         Cmd.__init__(self)
         self.server = None
         self.remote = remote
+        self.event = threading.Event()
         if remote:
             self.client = RESTClient
             self.client.set_server_url(url) 
@@ -282,6 +284,27 @@ class Console(Cmd):
             self.client.destroy(cmds[0])
         except Exception as e:
             handle_ex(e)
+
+    def do_stopsshforwarding(self, cmd):
+        """
+        TEST
+        """
+        # command validation
+        cmds = cmd.split()
+        if len(cmds) > 0:
+            Print.print_warning("Invalid number of arguments, see 'help stopsshforwarding'")
+            return
+
+        try:
+            Print.print_information("Killing ssh forwarding processes...")
+            # if self.server:
+            #     self.server.stop()
+            self.client.stop_ssh_forwarders()
+        except Exception as e:
+            handle_ex(e)
+        
+
+
 
     ############################################
     # exit process
