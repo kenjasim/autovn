@@ -116,7 +116,6 @@ class RESTClient(object):
             password: virtual host's password
         """
         # Get the ssh_remote_port of the virtual machine
-        print (options)
         port = None
         url = RESTClient.server_url + "host/" + options[0] + "/ssh_port"
         r = requests.get(url)
