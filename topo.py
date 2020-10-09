@@ -255,18 +255,20 @@ class Topology():
             Print.print_error("No Deployment with name {name}".format(name=deployment_name))
 
     @staticmethod
-    def stop_ssh_forwarders():
+    def stop_ssh_forwarders(deployment_name):
         """
         Stop any running ssh forwardingservers
         """
 
         #Loop through the sshforwarders running
-        for server in SSHForward.get_all():
+        for server in SSHForward.get_by_deployment(deployment_name):
             try:
                 os.kill(server.pid, 9)
                 SSHForward.delete(server)
-            except Exception as e :
-                handle_ex(e)
+            except ProcessLookupError:
+                print ("here")
+                pass
+           
 
 
 
