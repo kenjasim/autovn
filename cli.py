@@ -87,7 +87,7 @@ class Console(Cmd):
         # command validation
         cmds = cmd.split()
         if len(cmds) != 1:
-            Print.print_warning("Invalid number of arguments, see 'help show'")
+            Print.print_warning("Invalid number of arguments, see 'help start'")
             return
         try:
             Print.print_information("Starting network...")
@@ -107,11 +107,31 @@ class Console(Cmd):
         """
         cmds = cmd.split()
         if len(cmds) != 1:
-            Print.print_warning("Invalid number of arguments, see 'help show'")
+            Print.print_warning("Invalid number of arguments, see 'help restart'")
             return
         try:
             Print.print_information("Restarting virtual machines...")
             self.client.restart(cmds[0])
+        except Exception as e:
+            handle_ex(e)
+
+    ############################################
+    # Stop Virtual Machines
+    ############################################
+
+    def do_stop(self, cmd):
+        """
+        Stop the virtual machines within a deployment.
+
+        stop <deployment-name>  
+        """
+        cmds = cmd.split()
+        if len(cmds) != 1:
+            Print.print_warning("Invalid number of arguments, see 'help stop'")
+            return
+        try:
+            Print.print_information("Stopping virtual machines...")
+            self.client.stop(cmds[0])
         except Exception as e:
             handle_ex(e)
 
@@ -150,43 +170,30 @@ class Console(Cmd):
         """
         Start shell session with vm.
 
-        shell <vmname>
+        If local run: shell <vmname>
+        If running AVNserver in a remote location then: shell <vmname> <server_ip> <username> <password> 
         """
         # command validation
         cmds = cmd.split()
-        if len(cmds) != 1:
-            Print.print_warning("Invalid number of arguments, see 'help show'")
-            return
+        options = []
+        if self.remote:
+            if len(cmds) != 4:
+                Print.print_warning("Invalid number of arguments, see 'help shell'")
+                return
+            options = cmds[0:3]
+        else:
+            if len(cmds) != 1:
+                Print.print_warning("Invalid number of arguments, see 'help shell'")
+                return
+            options = cmds[0]
         
         # command execution
         Print.print_information("Establishing shell...")
         try:
-            self.client.shell(cmds[0])
+            self.client.shell(options)
         except Exception as e:
             handle_ex(e)
     
-    ############################################
-    # Open remote shell with a host 
-    ############################################
-
-    def do_rshell(self, cmd):
-        """
-        Start shell session with vm.
-
-        shell <vmname> <server_ip> <username> <password> 
-        """
-        # command validation
-        cmds = cmd.split()
-        if len(cmds) != 4:
-            Print.print_warning("Invalid number of arguments, see 'help show'")
-            return
-        
-        # command execution
-        Print.print_information("Establishing shell...")
-        try:
-            self.client.shell(cmds[0], cmds[1], cmds[2], cmds[3])
-        except Exception as e:
-            handle_ex(e)
 
     ############################################
     # Distribute Keys
@@ -265,7 +272,7 @@ class Console(Cmd):
         # command validation
         cmds = cmd.split()
         if len(cmds) != 1:
-            Print.print_warning("Invalid number of arguments, see 'help keys'")
+            Print.print_warning("Invalid number of arguments, see 'help destroy'")
             return
 
         try:

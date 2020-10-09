@@ -37,6 +37,16 @@ class RESTClient(object):
         r = requests.put(url)
         if r.status_code != 202:
             raise Exception("Failed to start topology: " + r.text)
+
+    @staticmethod
+    def stop(deployment_name): 
+        """
+        Request AVN Rest API to stop virtual host machines.  
+        """
+        url = RESTClient.server_url + "stop/" + deployment_name
+        r = requests.put(url)
+        if r.status_code != 202:
+            raise Exception("Failed to stop topology: " + r.text)
     
     @staticmethod
     def restart(deployment_name): 
@@ -95,7 +105,7 @@ class RESTClient(object):
         return data 
 
     @staticmethod
-    def shell(vmname, server_ip, username, password):
+    def shell(options):
         """
         Create an SSH shell terminal sessions with each host.
         Support for Mac only.
@@ -118,7 +128,17 @@ class RESTClient(object):
                 port = data["port"]
         # Open SSH session through new terminal
         shell = ssh_shell.Shell()
-        shell.connect(hostname=username, hostaddr=server_ip, password=password, hostport=port)
+        shell.connect(hostname=options[0], hostaddr=options[1], password=options[2], hostport=options[3])
+
+    @staticmethod
+    def start_ssh_forwarder(deployment_name):
+        """
+        Start ssh forwarder server for connection to vm through host machine. 
+        """
+        url = RESTClient.server_url + "sshforward/" + deployment_name
+        r = requests.put(url)
+        if r.status_code != 202:
+            raise Exception("Failed to start SSH server: " + r.text)
     
     @staticmethod
     def get_hosts(): 

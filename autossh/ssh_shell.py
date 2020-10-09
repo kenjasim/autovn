@@ -52,7 +52,9 @@ class Shell(object):
         Run SSH forwarding server threaded. 
         """
         kwargs = {"host_addr": host_addr, "host_port": host_port, "dest_addr": dest_addr, "dest_port": dest_port}
-        Thread(target=self.forwarding_server, kwargs=kwargs).start() 
+        server = Thread(target=self.forwarding_server, kwargs=kwargs)
+        server.daemon = True
+        server.start() 
     
     def forwarding_server(self, host_addr='', host_port=2001, dest_addr='', dest_port=22): 
         """
@@ -70,10 +72,16 @@ class Shell(object):
                 # print("forward socket created")
                 forward_socket.connect((dest_addr, dest_port))
                 # print("forward socket connected")
-                Thread(target=self.forward, args=(client_socket, forward_socket)).start()
-                Thread(target=self.forward, args=(forward_socket, client_socket)).start()
+                client_thread = Thread(target=self.forward, args=(client_socket, forward_socket))
+                client_thread.daemon = True
+                client_thread.start()
+                forward_thread = Thread(target=self.forward, args=(forward_socket, client_socket))
+                forward_thread.daemon = True
+                forward_thread.start()
         finally:
-            Thread(target=self.forwarding_server).start() 
+            forward_server = Thread(target=self.forwarding_server)
+            forward_server.daemon = True
+            forward_server.start()
     
     def forward(self, source, destination):
         """

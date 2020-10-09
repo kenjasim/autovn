@@ -49,6 +49,15 @@ def start(deployment_name):
         handle_ex(e)
         return ("Error", 500)
 
+@app.route('/stop/<string:deployment_name>', methods=['PUT'])
+def stop(deployment_name):
+    try:
+        threading.Thread(target=Topology.stop, args=(deployment_name, )).start()
+        return ("Network stop request accepted", 202)
+    except Exception as e:
+        handle_ex(e)
+        return ("Error", 500)
+
 @app.route('/restart/<string:deployment_name>', methods=['PUT'])
 def restart(deployment_name):
     try:
@@ -127,6 +136,15 @@ def get_ssh_remote_port(vmname):
     try:
         port = Hosts().get_ssh_remote_port(vmname)
         return jsonify([{'port': port}]), 200
+    except Exception as e:
+        handle_ex(e)
+        return ("Error", 500)
+
+@app.route('/sshforward/<string:deployment_name>', methods=['PUT'])
+def ssh_forward(deployment_name):
+    try:
+        Topology.start_ssh_forwarder(deployment_name)
+        return "SSH forwarding server for deployment {0} started".format(deployment_name), 200
     except Exception as e:
         handle_ex(e)
         return ("Error", 500)
