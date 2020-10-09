@@ -7,14 +7,15 @@ import atexit
 from resources import Hosts, Networks, SSHForward
 from topo import Topology
 
+# Initialise app-rest Api server 
 app = Flask(__name__)
 app.debug = False
 app.use_reloader = False
 
+# Initialise logging handling 
 logging.basicConfig(level=logging.DEBUG,
                             filename='tmp/avn.log',
                             format='%(asctime)s, %(levelname)s, %(name)s, %(message)s')
-
 logger = logging.getLogger()
 log = LoggingLogAdapter(logger, level=10)
 
@@ -23,9 +24,9 @@ def handle_ex(exception):
     logging.exception(exception)
     Print.print_error(exception)
 
-#####################
-# Topology Commands #
-#####################
+################################################################################
+# Rest API Endpoints
+################################################################################
 
 @app.route('/build', methods=['PUT'])
 @app.route('/build/<string:template>', methods=['PUT'])
@@ -159,19 +160,25 @@ def stop_ssh_forward(deployment_name):
         handle_ex(e)
         return ("Error", 500)
 
+################################################################################
+# Rest API Server Object 
+################################################################################
+
 class RESTServer(object):
+    """Http WSGI Server to wrap Flask API app server."""
 
     def __init__(self, address="", port=5000):
         self.address = address
         self.port = port
         self.http_server = None
-        # https://github.com/pytest-dev/pytest-flask/issues/104
+        # required for Mac Catalina  
         try:
             multiprocessing.set_start_method("fork")
-        except:
+        except RuntimeError:
             pass
 
     def start(self):
+        """Start Rest API server."""
         atexit.register(self.do_exit)
         self.http_server = WSGIServer((self.address, self.port), application=app, log=log, error_log=log)
         self.proc = multiprocessing.Process(target=self.http_server.serve_forever)
@@ -180,15 +187,19 @@ class RESTServer(object):
             self.address = "127.0.0.1"
         Print.print_success("Server avaliable at: http://" + self.address + ":" + str(self.port) + "/")
         
-
     def stop(self):
+        """Strop Rest API server"""
         self.http_server.stop()
         self.http_server.close()
         self.proc.terminate()
 
     def do_exit(self):
+        """Handle exit, and cleanup SSH forwarding servers for Rest API only mode"""
         for server in SSHForward.get_all():
             SSHForward.delete(server)
 
+################################################################################
+# Resources 
+################################################################################
 
-
+# https://github.com/pytest-dev/pytest-flask/issues/104

@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
 import argparse
+
 ################################################################################
-# Main module to be called on start-up. Alias for cli.py
+# Main module to be called on start-up. 
 ################################################################################
 
 def parseargs():
@@ -12,7 +13,6 @@ def parseargs():
     return vars(p.parse_args())
 
 
-    
 from cli import Console
 from restapi.server import RESTServer
 

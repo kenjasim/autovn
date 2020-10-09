@@ -5,23 +5,24 @@ from pathlib import Path
 from autossh import ssh_shell
 
 class RESTClient(object): 
-    """
-    Client controller for deploying network on AVN.  
-    """
+    """Client controller for deploying network on AVN."""
     server_url = "http://127.0.0.1:5000/"
 
     @staticmethod
     def set_server_url(url):
         """
         Set url address for remote AVN server.
-        Default: "http://127.0.0.1:5000/"
+        Options:
+            url (str): defaults to "http://127.0.0.1:5000/"
         """
         RESTClient.server_url = url
 
     @staticmethod
     def build(template_file="default.yaml"): 
         """
-        Request AVN Rest API to build master-worker topology. 
+        Request AVN Rest API to build topology from configuration template file.
+        Options:
+            template_file (str): <template_name.yaml>
         """
         url = RESTClient.server_url + "build/" + template_file
         r = requests.put(url)
@@ -30,9 +31,7 @@ class RESTClient(object):
     
     @staticmethod
     def start(deployment_name): 
-        """
-        Request AVN Rest API to start virtual host machines.  
-        """
+        """Request AVN Rest API to start virtual host machines."""
         url = RESTClient.server_url + "start/" + deployment_name
         r = requests.put(url)
         if r.status_code != 202:
@@ -40,9 +39,7 @@ class RESTClient(object):
 
     @staticmethod
     def stop(deployment_name): 
-        """
-        Request AVN Rest API to stop virtual host machines.  
-        """
+        """Request AVN Rest API to stop virtual host machines."""
         url = RESTClient.server_url + "stop/" + deployment_name
         r = requests.put(url)
         if r.status_code != 202:
@@ -50,9 +47,7 @@ class RESTClient(object):
     
     @staticmethod
     def restart(deployment_name): 
-        """
-        Request AVN Rest API to restart virtual host machines.  
-        """
+        """Request AVN Rest API to restart virtual host machines."""
         url = RESTClient.server_url + "restart/" + deployment_name 
         r = requests.put(url)
         if r.status_code != 202:
@@ -60,9 +55,7 @@ class RESTClient(object):
     
     @staticmethod
     def send_keys(deployment_name): 
-        """
-        Request AVN Rest API to generate and distribute SSH keys.  
-        """
+        """Request AVN Rest API to generate and distribute SSH keys."""
         url = RESTClient.server_url + "keys/" + deployment_name
         r = requests.put(url)
         if r.status_code != 202:
@@ -70,9 +63,7 @@ class RESTClient(object):
     
     @staticmethod
     def destroy(deployment_name): 
-        """
-        Request AVN Rest API to destroy the topology. 
-        """
+        """Request AVN Rest API to destroy the topology."""
         url = RESTClient.server_url + "destroy/" + deployment_name
         r = requests.delete(url)
         if r.status_code != 202:
@@ -82,7 +73,8 @@ class RESTClient(object):
     def host_details(): 
         """
         Request AVN Rest API to get host details
-        Returns: dict
+        Returns: 
+            host_data (dict): {vmname: , VMState: , ostype: , cpus: , memory: , deployment: ,}
         """
         url = RESTClient.server_url + "details/hosts"
         r = requests.get(url)
@@ -95,7 +87,8 @@ class RESTClient(object):
     def network_details(): 
         """
         Request AVN Rest API to get network details
-        Returns: dict
+        Returns:
+            network_data (dict): {vmname: , name: , netname: , mac: , ip: , deployment: }
         """
         url = RESTClient.server_url + "details/networks"
         r = requests.get(url)
@@ -108,12 +101,12 @@ class RESTClient(object):
     def shell(options):
         """
         Create an SSH shell terminal sessions with each host.
-        Support for Mac only.
+        Support for Mac and Linux (Gnome zsh). 
         Options:
-            vmname: name of rm to create shell session for
-            server_ip: ip address of the host machine 
-            username: virtual host's username 
-            password: virtual host's password
+            vmname      (str): name of rm to create shell session for
+            server_ip   (str): ip address of the host machine 
+            username    (str): virtual host's username 
+            password    (str): virtual host's password
         """
         # Get the ssh_remote_port of the virtual machine
         port = None
@@ -132,9 +125,7 @@ class RESTClient(object):
 
     @staticmethod
     def start_ssh_forwarder(deployment_name):
-        """
-        Start ssh forwarder server for connection to vm through host machine. 
-        """
+        """Start ssh forwarder server for connection to vm through host machine."""
         url = RESTClient.server_url + "sshforward/" + deployment_name
         r = requests.put(url)
         if r.status_code != 200:
@@ -142,6 +133,7 @@ class RESTClient(object):
 
     @staticmethod
     def stop_ssh_forwarders(deployment_name):
+        """Stop ssh forwarder server for all hosts within deployment."""
         url = RESTClient.server_url + "stopsshforwarding/" + deployment_name
         r = requests.delete(url)
         if r.status_code != 200:
@@ -151,7 +143,8 @@ class RESTClient(object):
     def get_hosts(): 
         """
         Request AVN Rest API to return hosts.
-        Returns: dict
+        Returns:
+            hosts (dict): {hostname: , username: , password: , image_name: }
         """
         url = RESTClient.server_url + "hosts"
         r = requests.get(url)
@@ -164,7 +157,8 @@ class RESTClient(object):
     def get_networks(): 
         """
         Request AVN Rest API to return networks.
-        Returns: dict
+        Returns:
+            networks (dict): {label: , netname: , netaddr: , dhcplower: , dhcpupper: }
         """
         url = RESTClient.server_url + "networks"
         r = requests.get(url)
@@ -177,7 +171,8 @@ class RESTClient(object):
     def get_ip(vmname): 
         """
         Request AVN Rest API to return the IP address for given vm-host.
-        Returns: dict
+        Returns:
+            vm_ip (dict): {vmname: ip} 
         """
         url = RESTClient.server_url + "host/" + vmname + "ipv4" 
         r = requests.get(url)
@@ -195,13 +190,3 @@ class RESTClient(object):
         if r.status_code != 200:
             raise Exception("Failed to GET IP for host: " + r.text) 
         return True
-
-
-    
-
-# HEADERS = {"Content-Type": "application/json",
-#                     "Accept": "*/*",
-#                     "Accept-Encoding": "gzip, deflate, br",
-#                     "Connection": "keep-alive"}
-    
-

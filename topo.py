@@ -18,9 +18,7 @@ from print_colours import Print
 from db import Session, create_tables, close_database, return_tables
 
 class Topology():
-    """
-    Launch a network toplogy using VirtualBox
-    """
+    """Collection of methods to build/interact with a deployment topology."""
 
     @staticmethod
     def build(template_file="default.yaml"):
@@ -36,9 +34,7 @@ class Topology():
     
     @staticmethod
     def start(deployment_name):
-        """
-        Start virtual network and machines.
-        """
+        """Start virtual network and machines."""
         # Get the hosts from the database
         hosts = Hosts().get_deployment_by_name(deployment_name)
         if hosts:
@@ -62,9 +58,13 @@ class Topology():
     def poll_ips(deployment_name, timeout=30):
         """
         Poll hosts for IP assignment.
+        Options: 
+            deployment_name (str): name of the deployment 
+            timeout         (int): polling timeout in seconds, default is 30s
         """
         # Get the hosts from the database
         hosts = Hosts().get_deployment_by_name(deployment_name)
+        # Poll all hosts until response received from each
         if hosts:
             t = time.time()
             while time.time() - t < timeout and len(hosts) > 0:
@@ -79,9 +79,7 @@ class Topology():
 
     @staticmethod
     def stop(deployment_name):
-        """
-        Shutdown virtual machines.
-        """
+        """Shutdown virtual machines."""
         hosts = Hosts().get_deployment_by_name(deployment_name)
         if hosts:
             # Start the thread executor
@@ -97,12 +95,9 @@ class Topology():
         else:
             Print.print_error("No Deployment with name {name}".format(name=deployment_name))
 
-    
     @staticmethod
     def restart(deployment_name):
-        """
-        Restart virtual machines.
-        """
+        """Restart virtual machines."""
         hosts = Hosts().get_deployment_by_name(deployment_name)
         if hosts:
              # Start the thread executor
@@ -118,13 +113,9 @@ class Topology():
         else:
            Print.print_error("No Deployment with name {name}".format(name=deployment_name))
 
-       
-
     @staticmethod
     def destroy(deployment_name):
-        """
-        Permanently delete all virtual machines and networks.
-        """
+        """Permanently delete all virtual machines and networks."""
         hosts = Hosts().get_deployment_by_name(deployment_name)
         if hosts:
 
@@ -175,9 +166,7 @@ class Topology():
 
     @staticmethod
     def host_details():
-        """
-        Return summary of all host properties.
-        """
+        """Return summary of all host properties."""
         # Get the hosts from the database
         hosts = Hosts().get_all()
 
@@ -195,9 +184,7 @@ class Topology():
 
     @staticmethod
     def network_details():
-        """
-        Return summary of all host-network configurations.
-        """
+        """Return summary of all host-network configurations."""
         # Get the hosts from the database
         hosts = Hosts().get_all()
         # Table data, each row is a list
@@ -220,9 +207,7 @@ class Topology():
     def shell(vmname):
         """
         Create an SSH shell terminal sessions with each host.
-        Support for Mac only.
-        Options:
-            vmname: name of rm to create shell session for
+        Support for Mac and Linux (Gnome) only.
         """
         host = Hosts().get_vmname(vmname)
         if host:
@@ -232,9 +217,7 @@ class Topology():
 
     @staticmethod
     def send_keys(deployment_name):
-        """
-        Distribute SSH public keys to hosts.
-        """
+        """Generate and distribute SSH public keys to hosts."""
         hosts = Hosts().get_deployment_by_name(deployment_name)
         if hosts:
             for host in hosts:
@@ -244,9 +227,7 @@ class Topology():
     
     @staticmethod
     def start_ssh_forwarder(deployment_name):
-        """
-        Start ssh forwarder server for connection to vm through host machine. 
-        """
+        """Start ssh forwarder server for connection to vm through host machine."""
         hosts = Hosts().get_deployment_by_name(deployment_name)
         if hosts:
             for host in hosts:
@@ -256,10 +237,7 @@ class Topology():
 
     @staticmethod
     def stop_ssh_forwarders(deployment_name):
-        """
-        Stop any running ssh forwardingservers
-        """
-
+        """Stop any running ssh forwardingservers"""
         #Loop through the sshforwarders running
         for server in SSHForward.get_by_deployment(deployment_name):
             try:
@@ -269,18 +247,3 @@ class Topology():
                 print ("here")
                 pass
            
-
-
-
-
-
-################################################################################
-# Main
-################################################################################
-
-if __name__ == '__main__':
-    pass
-
-################################################################################
-# Resources
-################################################################################
