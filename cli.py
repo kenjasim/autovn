@@ -180,7 +180,7 @@ class Console(Cmd):
             if len(cmds) != 4:
                 Print.print_warning("Invalid number of arguments, see 'help shell'")
                 return
-            options = cmds[0:3]
+            options = cmds[0:4]
         else:
             if len(cmds) != 1:
                 Print.print_warning("Invalid number of arguments, see 'help shell'")

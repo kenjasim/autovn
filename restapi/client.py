@@ -116,6 +116,7 @@ class RESTClient(object):
             password: virtual host's password
         """
         # Get the ssh_remote_port of the virtual machine
+        print (options)
         port = None
         url = RESTClient.server_url + "host/" + options[0] + "/ssh_port"
         r = requests.get(url)
@@ -128,7 +129,7 @@ class RESTClient(object):
                 port = data["port"]
         # Open SSH session through new terminal
         shell = ssh_shell.Shell()
-        shell.connect(hostname=options[1], hostaddr=options[2], password=options[3], hostport=port)
+        shell.connect(hostname=options[2], hostaddr=options[1], password=options[3], hostport=port)
 
     @staticmethod
     def start_ssh_forwarder(deployment_name):
