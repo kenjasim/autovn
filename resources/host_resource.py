@@ -64,6 +64,13 @@ class Hosts():
             return host.get_ip()
 
     @classmethod
+    def get_ssh_remote_port(self, vmname): 
+        """Get the ssh_remote_port of the host"""
+        host = Session.query(Host).filter_by(vmname=vmname).first()
+        if host:
+            return host.get_ssh_remote_port() 
+
+    @classmethod
     def delete(self, host):
         """Delete a host from the database"""
         Session.delete(host)

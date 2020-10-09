@@ -4,6 +4,7 @@ import re
 import os
 import time
 from models.network import Network
+from models.port_forward import PortForward
 from tabulate import tabulate
 from autossh import ssh_shell
 from print_colours import Print
@@ -22,10 +23,11 @@ class Host(Base):
     username = Column(String)
     password = Column(String)
     deployment_id = Column(Integer, ForeignKey('deployment.id'))
+    ssh_remote_port = Column(Integer, unique=True)
 
     def __repr__(self):
-        return "<Host(vmname='%s', image='%s', username='%s', password='%s', deployment_id='%s')>" % (
-            self.vmname, self.image, self.username, self.password, self.deployment_id)
+        return "<Host(vmname='%s', image='%s', username='%s', password='%s', deployment_id='%s', ssh_port='%s')>" % (
+            self.vmname, self.image, self.username, self.password, self.deployment_id, self.ssh_port)
 
     def __init__(self, vmname, image, username, password, deployment_id):
         """
@@ -41,6 +43,7 @@ class Host(Base):
         self.username = username
         self.password = password
         self.deployment_id = deployment_id
+        self.ssh_port = None
         # Check if image template or vmname already exists
         if self.check_exists(image):
             raise Exception("Template image already exists, unable to duplicate")
@@ -162,6 +165,12 @@ class Host(Base):
         Return host vmname.
         """
         return self.vmname
+    
+    def get_ssh_remote_port(self):
+        """
+        Return host's ssh_remote_port
+        """
+        return self.ssh_remote_port
 
     def start(self, headerless=True):
         """
@@ -228,7 +237,7 @@ class Host(Base):
         if ip is None:
             raise Exception("IP address not assigned.")
         # Open SSH session through new terminal
-        shell.connect(hostname=self.username, hostaddr=ip, password=self.password)
+        shell.connect(hostname=self.username, hostaddr=ip, password=self.password, hostport=22)
 
     def dist_pkey(self):
         """
@@ -260,6 +269,31 @@ class Host(Base):
             raise Exception("Failed to distribute SSH public key to host.")
         else:
             Print.print_success("SSH key distributed to host " + self.vmname + " at " + self.username + "@" + self.get_ip())
+
+    def ssh_forwarder(self): 
+        """
+        Run a background server to forward SSH traffic between the host machine
+        and the virtual machine. 
+        """
+        shell = PortForward()
+        # Find an unassigned port 
+        host_port = 2000
+        while shell.port_in_use(host_port):
+            host_port += 1
+        self.ssh_remote_port = host_port
+        Print.print_information("SSH port assigned to " + self.vmname + ": " + str(host_port))
+        ip = self.get_ip()
+        shell.start_forwarding_server(host_port=host_port, dest_addr=ip) 
+        self.update_to_db() 
+    
+    def proxy_ssh(self, public_ip):
+        """
+        Launch SSH session with virtual machine via host system. 
+        Relies on ssh_forwarder 
+        """
+        shell = ssh_shell.Shell()
+        # Open SSH session through new terminal
+        shell.connect(hostname=self.username, hostaddr=public_ip, password=self.password, hostport=self.ssh_remote_port)
 
     def __str__(self):
         """
@@ -299,6 +333,12 @@ class Host(Base):
         """
         Session.add(self)
         Session.commit()
+    
+    def update_to_db(self):
+        """
+        Update the host to the database
+        """
+        Session.commit()
 
 
 ################################################################################
@@ -306,15 +346,7 @@ class Host(Base):
 ################################################################################
 
 if __name__ == '__main__':
-    h = Host("master", "vm_templates/Ubuntu Server 20.04.ova", "dev", "ved")
-    h.assign_internet(1)
-    h.assign_network(2, "vboxnet0")
-    h.start()
-    time.sleep(20)
-    print(h)
-    h.ssh()
-    h.stop()
-    h.destroy()
+    pass 
 
 
 

@@ -19,8 +19,9 @@ from restapi.server import RESTServer
 import multiprocessing
 from pathlib import Path
 from tabulate import tabulate
+import threading
 
-from resources import Hosts
+from resources import Hosts, SSHForward
 
 # Log path 
 p = Path().parent.absolute() / "tmp"
@@ -36,6 +37,7 @@ class Console(Cmd):
         Cmd.__init__(self)
         self.server = None
         self.remote = remote
+        self.event = threading.Event()
         if remote:
             self.client = RESTClient
             self.client.set_server_url(url) 
@@ -87,7 +89,7 @@ class Console(Cmd):
         # command validation
         cmds = cmd.split()
         if len(cmds) != 1:
-            Print.print_warning("Invalid number of arguments, see 'help show'")
+            Print.print_warning("Invalid number of arguments, see 'help start'")
             return
         try:
             Print.print_information("Starting network...")
@@ -107,11 +109,31 @@ class Console(Cmd):
         """
         cmds = cmd.split()
         if len(cmds) != 1:
-            Print.print_warning("Invalid number of arguments, see 'help show'")
+            Print.print_warning("Invalid number of arguments, see 'help restart'")
             return
         try:
             Print.print_information("Restarting virtual machines...")
             self.client.restart(cmds[0])
+        except Exception as e:
+            handle_ex(e)
+
+    ############################################
+    # Stop Virtual Machines
+    ############################################
+
+    def do_stop(self, cmd):
+        """
+        Stop the virtual machines within a deployment.
+
+        stop <deployment-name>  
+        """
+        cmds = cmd.split()
+        if len(cmds) != 1:
+            Print.print_warning("Invalid number of arguments, see 'help stop'")
+            return
+        try:
+            Print.print_information("Stopping virtual machines...")
+            self.client.stop(cmds[0])
         except Exception as e:
             handle_ex(e)
 
@@ -143,27 +165,37 @@ class Console(Cmd):
             handle_ex(e)
 
     ############################################
-    # Open Shells
+    # Open Shell with a host 
     ############################################
 
     def do_shell(self, cmd):
         """
         Start shell session with vm.
 
-        shell <vmname>
+        If local run: shell <vmname>
+        If running AVNserver in a remote location then: shell <vmname> <server_ip> <username> <password> 
         """
         # command validation
         cmds = cmd.split()
-        if len(cmds) != 1:
-            Print.print_warning("Invalid number of arguments, see 'help show'")
-            return
+        options = []
+        if self.remote:
+            if len(cmds) != 4:
+                Print.print_warning("Invalid number of arguments, see 'help shell'")
+                return
+            options = cmds[0:4]
+        else:
+            if len(cmds) != 1:
+                Print.print_warning("Invalid number of arguments, see 'help shell'")
+                return
+            options = cmds[0]
         
         # command execution
         Print.print_information("Establishing shell...")
         try:
-            self.client.shell(cmds[0])
+            self.client.shell(options)
         except Exception as e:
             handle_ex(e)
+    
 
     ############################################
     # Distribute Keys
@@ -185,6 +217,29 @@ class Console(Cmd):
         try:
             Print.print_information("Distributing keys...")
             self.client.send_keys(cmds[0])
+        except Exception as e:
+            handle_ex(e)
+
+    ############################################
+    # SSH Forwarder 
+    ############################################
+    
+    def do_sshforward(self, cmd):
+        """
+        Startup SSH forwarders for remote host ssh connection
+
+        keys <deployment-name> 
+        """
+        # command validation
+        cmds = cmd.split()
+        if len(cmds) != 1:
+            Print.print_warning("Invalid number of arguments, see 'help sshforward'")
+            return
+
+        # command execution
+        try:
+            Print.print_information("Starting SSH forwarder server...")
+            self.client.start_ssh_forwarder(cmds[0])
         except Exception as e:
             handle_ex(e)
 
@@ -219,7 +274,7 @@ class Console(Cmd):
         # command validation
         cmds = cmd.split()
         if len(cmds) != 1:
-            Print.print_warning("Invalid number of arguments, see 'help keys'")
+            Print.print_warning("Invalid number of arguments, see 'help destroy'")
             return
 
         try:
@@ -229,6 +284,27 @@ class Console(Cmd):
             self.client.destroy(cmds[0])
         except Exception as e:
             handle_ex(e)
+
+    def do_stopsshforwarding(self, cmd):
+        """
+        TEST
+        """
+        # command validation
+        cmds = cmd.split()
+        if len(cmds) > 0:
+            Print.print_warning("Invalid number of arguments, see 'help stopsshforwarding'")
+            return
+
+        try:
+            Print.print_information("Killing ssh forwarding processes...")
+            # if self.server:
+            #     self.server.stop()
+            self.client.stop_ssh_forwarders()
+        except Exception as e:
+            handle_ex(e)
+        
+
+
 
     ############################################
     # exit process

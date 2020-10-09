@@ -6,9 +6,9 @@ deployment:
 # Network Configuration
 networks:
   hoif1:
-    netaddr: "10.0.0.1"
-    dhcplower: "10.0.0.2"
-    dhcpupper: "10.0.0.254"
+    netaddr: "20.0.0.1"
+    dhcplower: "20.0.0.2"
+    dhcpupper: "20.0.0.254"
 
 #Hosts Configuration
 hosts:

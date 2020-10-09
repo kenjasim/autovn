@@ -2,10 +2,13 @@ from subprocess import Popen, PIPE
 import subprocess
 import pathlib
 import sys
+import socket
+import os
+from threading import Thread
 
 class Shell(object):
 
-    def connect(self, hostname, hostaddr, password):
+    def connect(self, hostname, hostaddr, password, hostport):
         """Open Apple Mac terminal and open interactive SSH session with host"""
         # Use AppleScript to open a new terminal and run SSH bash script
         bsPath = str(pathlib.Path(__file__).parent.absolute())
@@ -18,7 +21,8 @@ class Shell(object):
                 + "&& ./ssh_connect.sh "
                 + hostname + " "
                 + hostaddr + " "
-                + password
+                + password + " "
+                + str(hostport) 
                 + "\"'")
         elif sys.platform == "linux":
             cmd = ("gnome-terminal --working-directory="
@@ -27,7 +31,8 @@ class Shell(object):
                 + "zsh -c \"./ssh_connect.sh "
                 + hostname + " "
                 + hostaddr + " "
-                + password
+                + password + " "
+                + str(hostport)
                 + "; zsh \"")
         else:
             raise Exception("OS not supported, please open shell manually")

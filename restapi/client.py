@@ -2,6 +2,7 @@
 
 import requests
 from pathlib import Path
+from autossh import ssh_shell
 
 class RESTClient(object): 
     """
@@ -36,6 +37,16 @@ class RESTClient(object):
         r = requests.put(url)
         if r.status_code != 202:
             raise Exception("Failed to start topology: " + r.text)
+
+    @staticmethod
+    def stop(deployment_name): 
+        """
+        Request AVN Rest API to stop virtual host machines.  
+        """
+        url = RESTClient.server_url + "stop/" + deployment_name
+        r = requests.put(url)
+        if r.status_code != 202:
+            raise Exception("Failed to stop topology: " + r.text)
     
     @staticmethod
     def restart(deployment_name): 
@@ -94,15 +105,47 @@ class RESTClient(object):
         return data 
 
     @staticmethod
-    def shell(vmname='all'):
+    def shell(options):
         """
         Create an SSH shell terminal sessions with each host.
         Support for Mac only.
         Options:
             vmname: name of rm to create shell session for
+            server_ip: ip address of the host machine 
+            username: virtual host's username 
+            password: virtual host's password
         """
-        print("SHELL FUNCTIONALITY TO BE COMPLETED FOR REMOTE CLIENT")
+        # Get the ssh_remote_port of the virtual machine
+        port = None
+        url = RESTClient.server_url + "host/" + options[0] + "/ssh_port"
+        r = requests.get(url)
+        if r.status_code != 200:
+            raise Exception("Failed to GET ssh_remote_port: " + r.text)
+        for data in r.json(): 
+            if "port" not in data.keys():
+                raise Exception("Failed to GET ssh_remote_port2: " + r.text)
+            else:
+                port = data["port"]
+        # Open SSH session through new terminal
+        shell = ssh_shell.Shell()
+        shell.connect(hostname=options[2], hostaddr=options[1], password=options[3], hostport=port)
 
+    @staticmethod
+    def start_ssh_forwarder(deployment_name):
+        """
+        Start ssh forwarder server for connection to vm through host machine. 
+        """
+        url = RESTClient.server_url + "sshforward/" + deployment_name
+        r = requests.put(url)
+        if r.status_code != 200:
+            raise Exception("Failed to start SSH server: " + r.text)
+
+    @staticmethod
+    def stop_ssh_forwarders():
+        url = RESTClient.server_url + "stopsshforwarding/"
+        r = requests.delete(url)
+        if r.status_code != 200:
+            raise Exception("Failed to start SSH server: " + r.text)
     
     @staticmethod
     def get_hosts(): 

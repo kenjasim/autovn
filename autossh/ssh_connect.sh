@@ -4,12 +4,13 @@
 set hostname [lindex $argv 0]
 set hostaddr [lindex $argv 1]
 set password [lindex $argv 2]
+set hostport [lindex $argv 3]
 
 puts "Starting SSH session with $hostname@$hostaddr..."
 sleep 1
 
 # create SSH session with host 
-eval spawn ssh -oStrictHostKeyChecking=no -oCheckHostIP=no $hostname@$hostaddr
+eval spawn ssh -oStrictHostKeyChecking=no -oCheckHostIP=no $hostname@$hostaddr -p $hostport
 
 # Use the correct prompt
 set prompt ":|#|\\\$"
