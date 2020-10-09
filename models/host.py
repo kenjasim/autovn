@@ -9,12 +9,14 @@ from tabulate import tabulate
 from autossh import ssh_shell
 from print_colours import Print
 
-# Create ObjectRelationalModel (ORM) base class
 from sqlalchemy import Column, Integer, String, Sequence, ForeignKey
 from db import Base
 from db import Session
 
 class Host(Base):
+    """
+    Host object to represent real Virtual Host OS.
+    """
     # Define 'hosts' SQL table for instances of Host
     __tablename__ = 'hosts'
     id = Column(Integer, Sequence('host_id_seq'), primary_key=True)
@@ -22,21 +24,17 @@ class Host(Base):
     image = Column(String)
     username = Column(String)
     password = Column(String)
-    deployment_id = Column(Integer, ForeignKey('deployment.id'))
+    deployment_id = Column(Integer, ForeignKey('deployments.id'))
     ssh_remote_port = Column(Integer, unique=True)
-
-    def __repr__(self):
-        return "<Host(vmname='%s', image='%s', username='%s', password='%s', deployment_id='%s', ssh_port='%s')>" % (
-            self.vmname, self.image, self.username, self.password, self.deployment_id, self.ssh_port)
 
     def __init__(self, vmname, image, username, password, deployment_id):
         """
         Initialises Ubuntu Server 20.04 virtual machine via VirtualBox
         Options:
-            label: user defined label to identify host
-            image: name of the .ova image located in vm_templates directory
-            username: username of the machine
-            password: password of the machine
+            label       (str): user defined label to identify host
+            image       (str): name of the .ova image located in vm_templates directory
+            username    (str): username of the machine
+            password    (str): password of the machine
         """
         self.vmname = vmname
         self.image = image
@@ -51,14 +49,12 @@ class Host(Base):
             raise Exception("VM image with assigned name already exists")
         # Import image into VirtualBox
         self.import_image()
-
         # Write to database
         self.write_to_db()
 
-
     @classmethod
     def check_exists(self, vmname):
-        """Check if a virtual machine with the given label exists"""
+        """Check if a virtual machine with the given label exists."""
         # Collate list of currently imported vm names
         cmd = ['vboxmanage list vms']
         vmsfound = re.findall(r"\"(.*)\"", subprocess.getoutput(cmd))
@@ -68,9 +64,7 @@ class Host(Base):
                 return True
 
     def import_image(self):
-        """
-        Import vm .ova image into VirtualBox
-        """
+        """Import vm .ova image into VirtualBox"""
         # Form path to image
         cmd = 'VBoxManage import ' + str(Path("\"" + self.image + "\"")) + ' --vsys 0 --vmname ' + self.vmname
         subprocess.getoutput(cmd)
@@ -85,8 +79,8 @@ class Host(Base):
         """
         Assign a virtual machine adapter to a network
         Options:
-            adapter: Adapter of host to be used, e.g. 1 to 8
-            netname: Name of the host-only network to connect to
+            adapter (str): Adapter of host to be used, e.g. 1 to 8
+            netname (str): Name of the host-only network to connect to
         """
         # Check network exists
         if not Network.check_exists(netname):
@@ -103,7 +97,7 @@ class Host(Base):
         Assign a 'nat' interface to the virtual machines for internet
         access through the hosting machine.
         Options:
-            adapter: Adapter of host to be used, e.g. 1 to 8
+            adapter (str): Adapter of host to be used, e.g. 1 to 8
         """
         # Assign adapter to nat interface
         cmd = 'vboxmanage modifyvm ' + self.vmname + ' --nic' + str(adapter) + ' nat'
@@ -155,28 +149,22 @@ class Host(Base):
                 return nic["ip"]
 
     def get_username(self):
-        """
-        Return host username.
-        """
+        """Return host username."""
         return self.username
     
     def get_vmname(self):
-        """
-        Return host vmname.
-        """
+        """Return host vmname."""
         return self.vmname
     
     def get_ssh_remote_port(self):
-        """
-        Return host's ssh_remote_port
-        """
+        """Return host's ssh_remote_port"""
         return self.ssh_remote_port
 
     def start(self, headerless=True):
         """
         Start running virtual machine.
         Options:
-            headerless: run without VirtualBox display (default is True)
+            headerless (bool): run without VirtualBox display (default is True)
         """
         # Set headerless option and start VM
         cmd = 'VBoxManage startvm ' + self.vmname
@@ -190,18 +178,13 @@ class Host(Base):
         Print.print_success("Launched machine " + self.vmname)
 
     def stop(self):
-        """
-        Shutdown the virtual machine.
-        """
+        """Shutdown the virtual machine."""
         cmd = 'VBoxManage controlvm ' + self.vmname + ' poweroff'
         subprocess.getoutput(cmd)
-
         Print.print_success("Powered off machine " + self.vmname)
 
     def restart(self):
-        """
-        Power off and on again the virtual machine.
-        """
+        """Power off and on again the virtual machine."""
         # Call host to poweroff 
         self.stop()
         # Wait for VM to poweroff 
@@ -214,9 +197,7 @@ class Host(Base):
         self.start()
 
     def destroy(self):
-        """
-        Permanently delete the virtual machine and all it's files.
-        """
+        """Permanently delete the virtual machine and all it's files."""
         # Delete SSH known_hosts entry
         if self.get_ip():
             cmd = "sed -i '' '/" + self.get_ip() + "/d' ~/.ssh/known_hosts"
@@ -228,9 +209,7 @@ class Host(Base):
         Print.print_success("Destroyed machine " + self.vmname)
 
     def ssh(self):
-        """
-        Launch SSH session with host.
-        """
+        """Launch SSH session with host."""
         shell = ssh_shell.Shell()
         # Retrieve IP address
         ip = self.get_ip()
@@ -240,9 +219,7 @@ class Host(Base):
         shell.connect(hostname=self.username, hostaddr=ip, password=self.password, hostport=22)
 
     def dist_pkey(self):
-        """
-        Create and distribute SSH keys for/to the host.
-        """
+        """Create and distribute SSH keys for/to the host."""
         p = Path().parent.absolute() / "keys"
         keyname = "id_rsa_vb"
         # Check keys path exists, else create 
@@ -289,7 +266,7 @@ class Host(Base):
     def proxy_ssh(self, public_ip):
         """
         Launch SSH session with virtual machine via host system. 
-        Relies on ssh_forwarder 
+        Relies on ssh_forwarder Server to be active. 
         """
         shell = ssh_shell.Shell()
         # Open SSH session through new terminal
@@ -313,9 +290,7 @@ class Host(Base):
         return s
 
     def dict(self):
-        """
-        Return an ordered dictionary for printing purposes
-        """
+        """Return an ordered dictionary for printing purposes."""
         # Get the dict and organised keys
         dict = self.__dict__
         keys = ["id", "vmname", "image", "username", "password"]
@@ -324,34 +299,21 @@ class Host(Base):
         new_dict= {}
         for key in keys:
             new_dict[key] = dict[key]
-
         return new_dict
 
     def write_to_db(self):
-        """
-        Write the host to the database
-        """
+        """Write the host to the database."""
         Session.add(self)
         Session.commit()
     
     def update_to_db(self):
-        """
-        Update the host to the database
-        """
+        """Update the host to the database."""
         Session.commit()
-
-
-################################################################################
-# Main
-################################################################################
-
-if __name__ == '__main__':
-    pass 
-
 
 
 ################################################################################
 # Resources
 ################################################################################
+
 # https://en.wikipedia.org/wiki/Ssh-keygen
 # https://www.lihaoyi.com/post/BuildyourownCommandLinewithANSIescapecodes.html

@@ -16,17 +16,21 @@ Session = scoped_session(sessionmaker())
 engine = create_engine('sqlite:///tmp/data.db', echo=False, connect_args={'check_same_thread': False})
 
 def bind_engine(engine):
+    """Bind the SQL Query engine to the database"""
     Base.metadata.bind = engine
     Session.configure(bind=engine)
 
 def create_tables():
+    """Initialise all tables in the database"""
     Base.metadata.create_all(engine)
 
 def return_tables():
+    """Return all tables in the database"""
     inspector = Inspector.from_engine(engine)
     return inspector.get_table_names() 
 
 def close_database():
+    """Close the database"""
     engine.dispose()
 
 bind_engine(engine)

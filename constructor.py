@@ -9,13 +9,13 @@ from sqlalchemy.exc import OperationalError
 from resources import Hosts, Networks, Deployments
 
 class Constructor():
+    """Collection of methods to build the topology from a configuration file."""
 
     def __init__(self, template_file):
         """
         Parse and return the hosts and networks from the template file.
-
-        Keyword Arguments:
-            template_file - The yaml template file to read
+        Options:
+            template_file (str): The name of the yaml configuration template file
         """
         # Generate the network
         self.networks = {}
@@ -34,11 +34,7 @@ class Constructor():
 
     def parse(self):
         """
-        Parse the network template.
-
-        Returns:
-            network - Dictionary of created networks
-            hosts - dictionary of created hosts
+        Parse the network template to build hosts and networks.
         """
         deployment_name = None
         # Read the network and host files
@@ -61,13 +57,9 @@ class Constructor():
             if deployment_name:
                 Print.print_information("Cleaning database...")
                 self.clear_up_database(deployment_name)
-                
-
-
+            
     def create_deployment(self):
-        """
-        Initialise deployment for grouping host-network topologies. 
-        """
+        """Initialise deployment for grouping host-network topologies."""
         if "deployment" in self.template:
             name = self.template['deployment']['name']
 
@@ -79,11 +71,8 @@ class Constructor():
                 return name
 
     def build_networks(self, deployment_name):
-        """
-        Reads the network information from the template 
-        """
+        """Build networks inline with configuration template."""
         # Read the network information and catch if it doesnt exist
-        
         if "networks" in self.template:
             networks = self.template['networks']
             # Loop through the networks and collect the information
@@ -97,9 +86,7 @@ class Constructor():
             raise Exception("No network information in template")
 
     def build_hosts(self, deployment_name):
-        """
-        Creates the host virtual machines from the template. 
-        """
+        """Build networks inline with configuration template."""
         # Read the hosts information and catch if it doesnt exist
 
         if "hosts" in self.template:
@@ -134,95 +121,64 @@ class Constructor():
             Print.print_error("No host information in template")
 
     def is_valid_deployment_name(self, deployment_name):
-        """
-        Check if the deployment name is in the database, if present raise an exception
-
-        Keyword Arguments
-            deployment_name - the name to check
-        """
-
+        """Check if the deployment name is in the database, if present raise an exception."""
         if Deployments.get_by_name(deployment_name) == None:
             return True
-
         raise Exception("Deployment name {0} is already in use".format(deployment_name))
         
     def is_valid_net_template(self, values): 
-        """
-        Check all values are present. 
-        """ 
+        """Check all required key-values are present in the networks template section.""" 
         if "netaddr" and "dhcplower" and "dhcpupper" in values:
             return True 
-        
         raise Exception("Network template invalid. Please ensure all fields are present")
 
     def is_valid_net_addr(self, netaddr):
-        """
-        Check netaddr is unique.
-        """
+        """Check netaddr is unique."""
         if Networks.get_ipaddr(netaddr=netaddr) == None: 
             return True
-        
         raise Exception("Network address already used. Please change in template")
 
     def is_valid_host_template(self, values): 
-        """
-        Check all values are present. 
-        """ 
+        """Check all required key-values are present in the hosts template section.""" 
         if "image" and "username" and "password" and "networks" and "internet_access" in values:
             return True 
-        
         raise Exception("Host template invalid. Please ensure all fields are present")
 
     def is_valid_host_vname(self, vmname):
-        """
-        Check vmname is unique.
-        """
+        """Check vmname is unique."""
         if Hosts.get_vmname(vmname=vmname) == None: 
             return True
-        
         raise Exception("Virtual machine name already used. Please change in template")
 
     def clear_up_networks(self):
-        """
-        Clear from virtualbox any built networks
-        """
+        """Clear from virtualbox any networks built during constructor phase."""
         for network in self.networks.values():
             network.destroy()
 
     def clear_up_hosts(self):
-        """
-        Clear from virtualbox any built hosts
-        """
+        """Clear from virtualbox any hosts built during constructor phase."""
         for host in self.hosts.values():
             host.destroy()
 
     def clear_up_database(self, deployment_name):
-        """
-        Clear from virtualbox any built hosts
-        """
+        """Clear any built networks and hosts during the constructor phase."""
         # Get any networks writen to the database
         networks = Networks().get_deployment_by_name(deployment_name)
-
         # Remove from database
         if networks:
             for network in networks:
                 Networks().delete(network)
-
         # Get any hosts writen to the database
         hosts = Hosts().get_deployment_by_name(deployment_name)
-
         # Remove from database
         if hosts:
             for host in hosts:
                 Hosts().delete(host)
-
         # Remove Deployment
         Deployments().delete_by_name(deployment_name)
 
     def add_to_db(self):
-        """
-        Add the networks and hosts to the database
-        """
+        """Add the networks and hosts to the database."""
         for network in self.networks.values():
             # Add network to db
             Networks().post(network)

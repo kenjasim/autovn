@@ -33,10 +33,6 @@ catch {
         expect eof
 } err_result
 
-# Print to console 
-# puts $output
-# puts $err_result 
-
 
         
 

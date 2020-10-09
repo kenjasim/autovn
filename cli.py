@@ -29,11 +29,19 @@ if not os.path.isdir(str(p)):
     os.mkdir(str(p)) 
 
 class Console(Cmd):
+    """Command Line Interface for the Automated Virtual Network (AVN) application."""
+    # Command-line intro and prompt settings 
     prompt = ">>> "
     with open('misc/intro.txt', 'r') as f:
         intro = f.read()
 
     def __init__(self, remote=False, url="http://127.0.0.1:5000/"):
+        """
+        Initialise and run command-line interface.
+        Options:
+            remote (bool): connect to remote AVN server, default false 
+            url     (str): url of remote AVN server
+        """
         Cmd.__init__(self)
         self.server = None
         self.remote = remote
@@ -59,8 +67,8 @@ class Console(Cmd):
     def do_build(self, cmd):
         """
         Initialise network. Leave template blank for default 3h-1n config.
-
-        build <path/to/template>
+        Usage:
+            build <path/to/template>
         """
         cmds = cmd.split()
         if len(cmds) > 1:
@@ -83,8 +91,8 @@ class Console(Cmd):
     def do_start(self, cmd):
         """
         Start virtual machines within a deployment.
-
-        start <deployment-name>    
+        Usage:
+            start <deployment-name>    
         """
         # command validation
         cmds = cmd.split()
@@ -104,8 +112,8 @@ class Console(Cmd):
     def do_restart(self, cmd):
         """
         Restart the virtual machines within a deployment.
-
-        restart <deployment-name>  
+        Usage:
+            restart <deployment-name>  
         """
         cmds = cmd.split()
         if len(cmds) != 1:
@@ -124,8 +132,8 @@ class Console(Cmd):
     def do_stop(self, cmd):
         """
         Stop the virtual machines within a deployment.
-
-        stop <deployment-name>  
+        Usage:
+            stop <deployment-name>  
         """
         cmds = cmd.split()
         if len(cmds) != 1:
@@ -144,8 +152,8 @@ class Console(Cmd):
     def do_show(self, cmd):
         """
         Show properties for all deployments.
-
-        show [option]
+        Usage:
+            show [option]
         Options:
             h: host properties
             n: network adapter properties
@@ -171,9 +179,9 @@ class Console(Cmd):
     def do_shell(self, cmd):
         """
         Start shell session with vm.
-
-        If local run: shell <vmname>
-        If running AVNserver in a remote location then: shell <vmname> <server_ip> <username> <password> 
+        Usage:
+            shell <vmname> (if hosted locally)
+            shell <vmname> <server_ip> <username> <password> (if hosted remotely)
         """
         # command validation
         cmds = cmd.split()
@@ -204,8 +212,8 @@ class Console(Cmd):
     def do_keys(self, cmd):
         """
         Distribute SSH keys to all hosts within a deployment.
-
-        keys <deployment-name> 
+        Usage:
+            keys <deployment-name> 
         """
         # command validation
         cmds = cmd.split()
@@ -221,14 +229,14 @@ class Console(Cmd):
             handle_ex(e)
 
     ############################################
-    # SSH Forwarder 
+    # Start SSH Forwarding
     ############################################
     
     def do_sshforward(self, cmd):
         """
         Startup SSH forwarders for remote host ssh connection
-
-        keys <deployment-name> 
+        Usage:
+            keys <deployment-name> 
         """
         # command validation
         cmds = cmd.split()
@@ -244,12 +252,39 @@ class Console(Cmd):
             handle_ex(e)
 
     ############################################
+    # Stop SSH Forwarding 
+    ############################################
+
+    def do_stopsshforwarding(self, cmd):
+        """
+        Stop the ssh forwarding server per deployment 
+        Usage:
+            stopsshforwarding <deployment-name>
+        """
+        # command validation
+        cmds = cmd.split()
+        if len(cmds) != 1:
+            Print.print_warning("Invalid number of arguments, see 'help stopsshforwarding'")
+            return
+
+        # command execution 
+        try:
+            Print.print_information("Killing ssh forwarding processes...")
+            # if self.server:
+            #     self.server.stop()
+            self.client.stop_ssh_forwarders(cmds[0])
+        except Exception as e:
+            handle_ex(e)
+
+    ############################################
     # Launch RestAPI Server
     ############################################
 
     def do_server(self, cmd):
         """
         Launch the RestAPI Server.
+        Usage:
+            server
         """
         try:
             if self.remote:
@@ -268,8 +303,8 @@ class Console(Cmd):
     def do_destroy(self, cmd):
         """
         Destroy the vms and network interfaces within a deployment.
-
-        destroy <deployment-name>
+        Usage:
+            destroy <deployment-name>
         """
         # command validation
         cmds = cmd.split()
@@ -285,39 +320,15 @@ class Console(Cmd):
         except Exception as e:
             handle_ex(e)
 
-    def do_stopsshforwarding(self, cmd):
-        """
-        Stop the ssh forwarding server per deployment 
-
-        Usage
-        stopsshforwarding <deployment-name>
-        """
-        # command validation
-        cmds = cmd.split()
-        if len(cmds) != 1:
-            Print.print_warning("Invalid number of arguments, see 'help stopsshforwarding'")
-            return
-
-        try:
-            Print.print_information("Killing ssh forwarding processes...")
-            # if self.server:
-            #     self.server.stop()
-            self.client.stop_ssh_forwarders(cmds[0])
-        except Exception as e:
-            handle_ex(e)
-        
-
-
-
     ############################################
     # exit process
     ############################################
 
     def do_exit(self, cmd):
         """
-        Exit the application
-
-        exit
+        Exit the application.
+        Usage:
+            exit
         """
         try:
             # Stop the rest api if running
@@ -344,16 +355,17 @@ def handle_ex(exception):
     logging.exception(exception)
     Print.print_error(exception)
 
+################################################################################
+# Formatting
+################################################################################
+
 def create_table(items):
     """
-    Create and print a table to the console
-    from a dict
-
-    Keyword Arguments:
-        items - a dict of items
-
+    Create and print a table to the console from a dict.
+    Options:
+        items (dict): {dict of items:}
     Returns
-        nicely formatted table string
+        output (str): formatted string
     """
     header = items[0].keys()
     rows =  [item.values() for item in items]
