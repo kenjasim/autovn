@@ -117,7 +117,7 @@ class RESTClient(object):
         """
         # Get the ssh_remote_port of the virtual machine
         port = None
-        url = RESTClient.server_url + "host/" + vmname + "/ssh_port"
+        url = RESTClient.server_url + "host/" + options[0] + "/ssh_port"
         r = requests.get(url)
         if r.status_code != 200:
             raise Exception("Failed to GET ssh_remote_port: " + r.text)
@@ -137,7 +137,7 @@ class RESTClient(object):
         """
         url = RESTClient.server_url + "sshforward/" + deployment_name
         r = requests.put(url)
-        if r.status_code != 202:
+        if r.status_code != 200:
             raise Exception("Failed to start SSH server: " + r.text)
     
     @staticmethod
