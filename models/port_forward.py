@@ -7,6 +7,7 @@ from sqlalchemy import Column, Integer, String, Sequence, ForeignKey
 from sqlalchemy.orm import relationship
 from db import Base
 from db import Session
+from print_colours import Print
 
 class PortForward(Base):
 
@@ -22,11 +23,12 @@ class PortForward(Base):
     
     def start_forwarding_server(self, host_addr='', host_port=2001, dest_addr='', dest_port=22): 
         """
-        Run SSH forwarding server threaded. 
+        Run SSH forwarding server as a sub-process. 
         """
         # Create and start a process
         kwargs = {"host_addr": host_addr, "host_port": host_port, "dest_addr": dest_addr, "dest_port": dest_port}
         try:
+            # required for Mac Catolina 
             multiprocessing.set_start_method("fork")
         except:
             pass
@@ -66,19 +68,18 @@ class PortForward(Base):
     
     def forward(self, source, destination):
         """
-        Helper script for forwarding_server for managing socket stream read/writes.
+        Read from source socket stream and write to destination socket stream.
         """
         try:
             while True:
                 string = source.recv(1024)
                 if string:
-                    # print("forwarding") 
                     destination.sendall(string)
                 else:
                     source.shutdown(socket.SHUT_RD)
                     destination.shutdown(socket.SHUT_WR)
         except Exception as e: 
-            pass 
+            Print.print_error("forward: " + e)
     
     def port_in_use(self, port):
         """
