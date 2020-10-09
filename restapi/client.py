@@ -128,7 +128,7 @@ class RESTClient(object):
                 port = data["port"]
         # Open SSH session through new terminal
         shell = ssh_shell.Shell()
-        shell.connect(hostname=options[0], hostaddr=options[1], password=options[2], hostport=options[3])
+        shell.connect(hostname=options[1], hostaddr=options[2], password=options[3], hostport=port)
 
     @staticmethod
     def start_ssh_forwarder(deployment_name):
