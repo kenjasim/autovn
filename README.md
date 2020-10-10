@@ -66,7 +66,7 @@ hosts:
     username: "dev"
     password: "ved"
     networks:
-      - hoif1
+      - hoif2
     internet_access: True
 ```
 
