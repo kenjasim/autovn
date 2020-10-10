@@ -5,11 +5,13 @@ Pythonic application for automatically launching virtual networks using VirtualB
 * Command line based application 
 * YAML-defined network-host topology configuration
 * Data persistence 
-* RestApi server 
+* RestApi server
+* Remote client mode
 * Log management 
 * Automated virtualisation with VirtualBox 
 * Automatically spawn SSH sessions in new Mac and Linux terminal windows
 * Automatically distribute RSA keys for remote access and ansible support 
+* SSH port forwarding for remote host access 
 
 
 ## Installation 
@@ -17,6 +19,8 @@ Pythonic application for automatically launching virtual networks using VirtualB
 ```bash
 pip3 install -r requirements.txt
 ```
+
+Requires VirtualBox to be installed. 
 
 ## YAML Topology Configuration 
 
@@ -76,7 +80,17 @@ $ python3 avn.py
 
 ### Start Virtual Machines 
 ```python
->>> start 
+>>> start <deployment-name>
+```
+
+### Stop Virtual Machines 
+```python
+>>> stop <deployment-name>
+```
+
+### Restart Virtual Machines 
+```python
+>>> restart <deployment-name>
 ```
 
 ### Display host configs 
@@ -121,18 +135,22 @@ show n
 
 ### Spawn SSH Shells (Mac and Linux) Automatically 
 ```python
->>> shell
 >>> shell <hostname>
+```
+For remote client mode: 
+```python
+>>> sshforward <deployment-id>
+>>> shell <vmname> <server-ip> <username> <password>
 ```
 
 ### Generate and Distribute SSH Keys 
 ```python
->>> keys
+>>> keys <deployment-id>
 ```
 
-### Cleanup 
+### Destroy
 ```python
->>> destroy
+>>> destroy <deployment-id>
 ```
 
 ### Exit Application 
@@ -141,17 +159,25 @@ show n
 ```
 Or press, CTRL + C 
 
-### Rest API 
+### Rest API Server
 ```python
 >>> server
-
 ```
-Or press, CTRL + C 
+Or open application in server-only mode 
+```bash
+$ python avn.py -r 
+```
 
 Response:
 ```python
 [i] Starting RestAPI server...
 [✓] Server avaliable at: http://127.0.0.1:5000/
+```
+
+### Client-only Mode
+```bash
+$ python avn.py -c <server-url>
+$ python avn.py -c <http://127.0.0.1:5000/>
 ```
 
 
