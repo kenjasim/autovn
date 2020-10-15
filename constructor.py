@@ -103,20 +103,25 @@ class Constructor():
                     
                     # Manage network assignments
                     networks = values["networks"]
-                    # Assign the network access if that is required
-                    if values["internet_access"]:
-                        # Assign internet to the very first adapter 
-                        networks.insert(0, "Internet")
-                        self.hosts[vmname].assign_internet(1)
+                    # Initiaise adapter identifier, starts at adapter 1
+                    adapter = 1
                     # Loop through rest of list and assign adapter
                     for index, networklabel in enumerate(networks):
-                        # Check if its in the list and that the adapters havent gone over 8
-                        if networklabel == "Internet":
-                            continue
-                        elif networklabel in self.networks and index + 1 < 8:
-                                self.hosts[vmname].assign_network(index+1, self.networks[networklabel].get_name())
+                        adapter += index # at first iteration index = 0
+                        # Check if network has been created and adapters havent gone over 8
+                        if networklabel in self.networks and adapter <= 8:
+                            self.hosts[vmname].assign_network(adapter, self.networks[networklabel].get_name())
                         else:
                             raise Exception("Error assigning network adapter, please check template file")
+                    # Point to next free adapter 
+                    adapter += 1
+                    # Assign network access if required to the next adapter
+                    if values["internet_access"]:
+                        # Check a free adapter is avaliable 
+                        if adapter <= 8:
+                            self.hosts[vmname].assign_internet(adapter)
+                        else:
+                            raise Exception("Error adapter count for host exceeded")
         else:
             Print.print_error("No host information in template")
 

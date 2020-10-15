@@ -1,7 +1,7 @@
 ---
 # Deploymnet Configuration
 deployment: 
-  name: kubernetes
+  name: kube
 
 # Network Configuration
 networks:
