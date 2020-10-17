@@ -314,11 +314,16 @@ class Console(Cmd):
 
         try:
             Print.print_information("Destroying network...")
-            # if self.server:
-            #     self.server.stop()
             self.client.destroy(cmds[0])
         except Exception as e:
             handle_ex(e)
+            print("Destroy failed, mannual Deployment cleanup require:")
+            print("1. Remove virtual machines from virtual box via cli")
+            print("2. Remove host-only network from virtual box via cli")
+            print("3. Delete DHCP leases from:")
+            print("\t ~/.config/VirtualBox/ (Linux)")
+            print("\t ~/Library/VirtualBox (Mac)")    
+            print("4. Remove SSH keys for hosts from ~/.ssh/known_hosts")
 
     ############################################
     # exit process
