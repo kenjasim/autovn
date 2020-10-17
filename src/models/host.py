@@ -66,8 +66,10 @@ class Host(Base):
 
     def import_image(self):
         """Import vm .ova image into VirtualBox"""
+        # Get the images folder
+        images_path = Path().home() / ".avn" / "images" / self.image
         # Form path to image
-        cmd = 'VBoxManage import ' + str(Path("\"" + self.image + "\"")) + ' --vsys 0 --vmname ' + self.vmname
+        cmd = 'VBoxManage import ' + "\"" + str(images_path) + "\"" + ' --vsys 0 --vmname ' + self.vmname
         subprocess.getoutput(cmd)
 
         # Check vm successfully imported
@@ -85,7 +87,7 @@ class Host(Base):
         """
         # Check network exists
         if not Network.check_exists(netname):
-            raise Exception("[!] Unable to assign network, does not exist.")
+            raise Exception("Unable to assign network, does not exist.")
         # Set network interface type to host-only
         cmd = 'vboxmanage modifyvm ' + self.vmname + ' --nic' + str(adapter) + ' hostonly'
         subprocess.getoutput(cmd)
@@ -230,7 +232,7 @@ class Host(Base):
 
     def dist_pkey(self):
         """Create and distribute SSH keys for/to the host."""
-        p = Path().parent.absolute() / "keys"
+        p = Path().home() / ".avn" / "keys"
         keyname = "id_rsa_vb"
         # Check keys path exists, else create 
         if not os.path.isdir(str(p)): 

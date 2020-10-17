@@ -22,7 +22,7 @@ class Constructor():
         self.hosts = {}
 
         # Build the path
-        template_path = str(pathlib.Path(__file__).parent.absolute() / "templates" / template_file )
+        template_path = str(pathlib.Path().home() / ".avn" / "templates" / template_file )
 
         # Check if the path exits
         if (os.path.isfile(template_path)):

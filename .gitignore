@@ -1,18 +1,6 @@
-/vm_templates
 .DS_Store
 __pycache__
-!keys
-keys/*
 
-# VM Images
-*.ova
-
-# Database
-!tmp
-tmp/*
-
-# Log
-*.log
 
 # Python environment
 /venv
@@ -21,3 +9,6 @@ activate
 
 # vscode 
 .vscode 
+
+# ignore the binaries
+bin/
