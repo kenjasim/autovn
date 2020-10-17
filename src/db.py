@@ -5,15 +5,11 @@ from sqlalchemy.engine.reflection import Inspector
 from pathlib import Path 
 import os 
 
-# Create db path 
-p = Path().parent.absolute() / "tmp"
-if not os.path.isdir(str(p)): 
-    os.mkdir(str(p)) 
-
 Base = declarative_base()
 Session = scoped_session(sessionmaker())
 # Create sql engine
-engine = create_engine('sqlite:///tmp/data.db', echo=False, connect_args={'check_same_thread': False})
+database_path = Path().home() / ".avn" / "data.db"
+engine = create_engine('sqlite:///{0}'.format(database_path), echo=False, connect_args={'check_same_thread': False})
 
 def bind_engine(engine):
     """Bind the SQL Query engine to the database"""

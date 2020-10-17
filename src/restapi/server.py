@@ -12,10 +12,6 @@ app = Flask(__name__)
 app.debug = False
 app.use_reloader = False
 
-# Initialise logging handling 
-logging.basicConfig(level=logging.DEBUG,
-                            filename='tmp/avn.log',
-                            format='%(asctime)s, %(levelname)s, %(name)s, %(message)s')
 logger = logging.getLogger()
 log = LoggingLogAdapter(logger, level=10)
 

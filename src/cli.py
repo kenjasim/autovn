@@ -23,16 +23,12 @@ import threading
 
 from resources import Hosts, SSHForward
 
-# Log path 
-p = Path().parent.absolute() / "tmp"
-if not os.path.isdir(str(p)): 
-    os.mkdir(str(p)) 
-
 class Console(Cmd):
     """Command Line Interface for the Automated Virtual Network (AVN) application."""
     # Command-line intro and prompt settings 
     prompt = ">>> "
-    with open('misc/intro.txt', 'r') as f:
+    intro_file = str(Path(__file__).parent.absolute() / "misc" / "intro.txt" )
+    with open(intro_file, 'r') as f:
         intro = f.read()
 
     def __init__(self, remote=False, url="http://127.0.0.1:5000/"):
@@ -53,9 +49,6 @@ class Console(Cmd):
                 Print.print_success("AVN Server is avaliable.") 
         else:
             self.client = Topology        
-        logging.basicConfig(level=logging.DEBUG,
-                            filename='tmp/avn.log',
-                            format='%(asctime)s, %(levelname)s, %(name)s, %(message)s')
 
         #Exit cleanup on keyboard interrupt
         atexit.register(self.do_exit, "")
