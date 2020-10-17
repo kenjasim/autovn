@@ -3,6 +3,7 @@ import subprocess
 import re
 import os
 import time
+import netifaces
 from models.network import Network
 from models.port_forward import PortForward
 from tabulate import tabulate
@@ -92,15 +93,24 @@ class Host(Base):
         cmd = 'vboxmanage modifyvm ' + self.vmname + ' --hostonlyadapter' + str(adapter) + ' ' + netname
         subprocess.getoutput(cmd)
 
-    def assign_internet(self, adapter):
+    def assign_internet(self, adapter, nettype='bridged'):
         """
-        Assign a 'nat' interface to the virtual machines for internet
-        access through the hosting machine.
+        Assign a 'bridged' or 'nat' interface to the virtual machines for internet.
+        If 'bridged', IP address is assigned by the gateway router. 
         Options:
-            adapter (str): Adapter of host to be used, e.g. 1 to 8
+            adapter (int): Adapter of host to be used, e.g. 1 to 8
+            nettype    (str): Network type ('bridged' or 'nat')
         """
-        # Assign adapter to nat interface
-        cmd = 'vboxmanage modifyvm ' + self.vmname + ' --nic' + str(adapter) + ' nat'
+        # Identify default host's default gateway interface 
+        iface = netifaces.gateways()['default'][netifaces.AF_INET][1]
+        # Build command for assigning adapter to interface
+        if nettype == 'nat':
+            cmd = 'vboxmanage modifyvm ' + self.vmname + ' --nic' + str(adapter) + ' ' + 'nat'
+        elif nettype == 'bridged':
+            cmd = 'vboxmanage modifyvm ' + self.vmname + ' --nic' + str(adapter) + ' ' + nettype + " --bridgeadapter2 " + "'" + iface + "'"
+        else: 
+            raise Exception("Invalid nettype, please choose between 'bridged' and 'nat'.")
+        # Assign network interface 
         subprocess.getoutput(cmd)
 
     def properties(self):
@@ -119,7 +129,7 @@ class Host(Base):
             if key in dinfo.keys():
                 dinfo[key] = value
             # Identify network connections
-            if "hostonlyadapter" in key or "natnet" in key:
+            if "hostonlyadapter" in key or "natnet" in key or "bridgeadapter" in key:
                 nic = re.match('.*?([0-9]+)$', key).group(1)
                 dinfo["nics"][nic] = {"netname": value, "mac": None, "ip": None}
         # Identify MAC addresses

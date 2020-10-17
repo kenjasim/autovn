@@ -148,7 +148,7 @@ class Network(Base):
             # Mac config location ~/Library/VirtualBox
             path = Path.home().glob('Library' + '/VirtualBox' + '/HostInterfaceNetworking-' + self.netname + '-Dhcpd.*')
         elif sys.platform == "linux":
-            # Linux config location ~/.config/VirtualBox/...
+            # Linux config location ~/.config/VirtualBox/... 
             path = Path.home().glob('.config' + '/VirtualBox' + '/HostInterfaceNetworking-' + self.netname + '-Dhcpd.*')
         else:
             raise Exception("OS not supported")
