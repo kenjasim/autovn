@@ -10,6 +10,7 @@ import shutil
 import sys
 import functools
 from contextlib import redirect_stdout
+import socket
 
 from security import authorise, authenticate
 from resources import Hosts, Networks, SSHForward, Users
@@ -46,6 +47,7 @@ def handle_ex(exception):
 ################################################################################
 # Rest API Endpoints
 ################################################################################
+
 @app.route('/', methods=['GET'])
 def check():
     return ("<h1>Server avaliable.</h1>", 200)
@@ -236,9 +238,15 @@ class RESTServer(object):
         # Setup nginx server config files 
         self.write_proxy_configs()
         self.set_proxy_configs()
+        # Check if ports are avaliable 
+        if self.port_in_use(self.port):
+            raise Exception(f"Local server port {self.port} in use.")
+        if self.remote and self.port_in_use(self.rport):
+            raise Exception(f"Remote server port {self.rport} in use.")
 
     def start(self):
         """Start Rest API server."""
+        # Start server as separate process 
         atexit.register(self.do_exit)
         self.http_server = WSGIServer((self.address, self.port), application=app, log=log, error_log=log)
         self.proc = multiprocessing.Process(target=self.start_http_server)
@@ -306,6 +314,13 @@ class RESTServer(object):
         server_config_path = Path().home() / ".avn" / "proxy" / "nginx.conf"
         cmd = "nginx -c {0}".format(server_config_path)
         subprocess.getoutput(cmd)
+    
+    def port_in_use(self, port):
+        """
+        Check if port is in use. 
+        """
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            return s.connect_ex(('localhost', port)) == 0
         
     def stop(self):
         """Strop Rest API server"""
