@@ -45,3 +45,4 @@ class Users():
     def find_by_id(_id):
         """Return user instance from database record"""
         return Session.query(User).filter_by(id=_id).first()
+    

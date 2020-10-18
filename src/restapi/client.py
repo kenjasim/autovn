@@ -3,10 +3,14 @@
 import requests, os
 from pathlib import Path
 from autossh import ssh_shell
+from urllib3.exceptions import InsecureRequestWarning
+
+requests.packages.urllib3.disable_warnings(category=InsecureRequestWarning)
 
 class RESTClient(object): 
     """Client controller for deploying network on AVN."""
     server_url = "http://127.0.0.1:5000/"
+    ssl_verify = False
 
     @staticmethod
     def set_server_url(url):
@@ -23,7 +27,7 @@ class RESTClient(object):
         url = RESTClient.server_url + "login"
         headers = {"Content-Type": "application/json"}
         login_details = {'username': username, 'password': password}
-        r = requests.post(url, json=login_details)
+        r = requests.post(url, json=login_details, verify=RESTClient.ssl_verify)
         if r.status_code != 200:
             raise Exception("Failed to login: " + r.text)
         else:
@@ -41,7 +45,7 @@ class RESTClient(object):
         """
         headers = RESTClient.get_api_variables()
         url = RESTClient.server_url + "build/" + template_file
-        r = requests.put(url, headers=headers)
+        r = requests.put(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 202:
             raise Exception("Failed to deploy topology: " + r.text)
     
@@ -50,7 +54,7 @@ class RESTClient(object):
         """Request AVN Rest API to start virtual host machines."""
         headers = RESTClient.get_api_variables()
         url = RESTClient.server_url + "start/" + deployment_name
-        r = requests.put(url, headers=headers)
+        r = requests.put(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 202:
             raise Exception("Failed to start topology: " + r.text)
 
@@ -59,7 +63,7 @@ class RESTClient(object):
         """Request AVN Rest API to stop virtual host machines."""
         headers = RESTClient.get_api_variables()
         url = RESTClient.server_url + "stop/" + deployment_name
-        r = requests.put(url, headers=headers)
+        r = requests.put(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 202:
             raise Exception("Failed to stop topology: " + r.text)
     
@@ -68,7 +72,7 @@ class RESTClient(object):
         """Request AVN Rest API to restart virtual host machines."""
         headers = RESTClient.get_api_variables()
         url = RESTClient.server_url + "restart/" + deployment_name 
-        r = requests.put(url, headers=headers)
+        r = requests.put(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 202:
             raise Exception("Failed to start topology: " + r.text)
     
@@ -77,7 +81,7 @@ class RESTClient(object):
         """Request AVN Rest API to generate and distribute SSH keys."""
         headers = RESTClient.get_api_variables()
         url = RESTClient.server_url + "keys/" + deployment_name
-        r = requests.put(url, headers=headers)
+        r = requests.put(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 202:
             raise Exception("Failed to distribute keys: " + r.text)
     
@@ -86,7 +90,7 @@ class RESTClient(object):
         """Request AVN Rest API to destroy the topology."""
         headers = RESTClient.get_api_variables()
         url = RESTClient.server_url + "destroy/" + deployment_name
-        r = requests.delete(url, headers=headers)
+        r = requests.delete(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 202:
             raise Exception("Failed to destroy topology: " + r.text)
     
@@ -99,7 +103,7 @@ class RESTClient(object):
         """
         headers = RESTClient.get_api_variables()
         url = RESTClient.server_url + "details/hosts"
-        r = requests.get(url, headers=headers)
+        r = requests.get(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 200:
             raise Exception("Failed to GET host details: " + r.text)
         data = r.json() 
@@ -114,7 +118,7 @@ class RESTClient(object):
         """
         headers = RESTClient.get_api_variables()
         url = RESTClient.server_url + "details/networks"
-        r = requests.get(url, headers=headers)
+        r = requests.get(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 200:
             raise Exception("Failed to GET network details: " + r.text)
         data = r.json() 
@@ -135,7 +139,7 @@ class RESTClient(object):
         headers = RESTClient.get_api_variables()
         port = None
         url = RESTClient.server_url + "host/" + options[0] + "/ssh_port"
-        r = requests.get(url, headers=headers)
+        r = requests.get(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 200:
             raise Exception("Failed to GET ssh_remote_port: " + r.text)
         for data in r.json(): 
@@ -152,7 +156,7 @@ class RESTClient(object):
         """Start ssh forwarder server for connection to vm through host machine."""
         headers = RESTClient.get_api_variables()
         url = RESTClient.server_url + "sshforward/" + deployment_name
-        r = requests.put(url, headers=headers)
+        r = requests.put(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 200:
             raise Exception("Failed to start SSH server: " + r.text)
 
@@ -161,7 +165,7 @@ class RESTClient(object):
         """Stop ssh forwarder server for all hosts within deployment."""
         headers = RESTClient.get_api_variables()
         url = RESTClient.server_url + "stopsshforwarding/" + deployment_name
-        r = requests.delete(url, headers=headers)
+        r = requests.delete(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 200:
             raise Exception("Failed to start SSH server: " + r.text)
     
@@ -174,7 +178,7 @@ class RESTClient(object):
         """
         headers = RESTClient.get_api_variables()
         url = RESTClient.server_url + "hosts"
-        r = requests.get(url, headers=headers)
+        r = requests.get(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 200:
             raise Exception("Failed to GET hosts: " + r.text)
         data = r.json() 
@@ -189,7 +193,7 @@ class RESTClient(object):
         """
         headers = RESTClient.get_api_variables()
         url = RESTClient.server_url + "networks"
-        r = requests.get(url, headers=headers)
+        r = requests.get(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 200:
             raise Exception("Failed to GET networks: " + r.text)
         data = r.json() 
@@ -204,7 +208,7 @@ class RESTClient(object):
         """
         headers = RESTClient.get_api_variables()
         url = RESTClient.server_url + "host/" + vmname + "ipv4" 
-        r = requests.get(url, headers=headers)
+        r = requests.get(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 200:
             raise Exception("Failed to GET IP for host: " + r.text)
         data = r.json() 
@@ -215,7 +219,7 @@ class RESTClient(object):
         """
         Check connection to API Server. 
         """
-        r = requests.get(RESTClient.server_url)
+        r = requests.get(RESTClient.server_url, verify=RESTClient.ssl_verify)
         if r.status_code != 200:
             raise Exception("Failed to GET IP for host: " + r.text) 
         return True

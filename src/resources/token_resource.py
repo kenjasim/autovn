@@ -13,3 +13,7 @@ class Tokens():
     @staticmethod
     def get_by_token(token):
         return Session.query(Token).filter_by(token=token).first()
+    
+    @staticmethod 
+    def get_by_user_id(user_id):
+        return Session.query(Token).filter_by(user_id=user_id).all() 

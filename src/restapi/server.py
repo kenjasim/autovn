@@ -1,6 +1,5 @@
 from gevent.pywsgi import WSGIServer, LoggingLogAdapter
 from flask import Flask, Response, jsonify, request
-from flask_jwt import JWT
 import multiprocessing, logging, threading
 from print_colours import Print
 import atexit
@@ -54,7 +53,6 @@ def check():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json
-    print(data)
     if 'username' in data and 'password' in data:
         try:
             token = authenticate(data['username'], data['password'])
