@@ -31,12 +31,3 @@ class User(Base):
         for key in keys:
             new_dict[key] = dict[key]
         return new_dict
-
-    # def __repr__(self):
-    #     return f"<User:: id: {self.id}, username: {self.username}>"
-
-
-    # @classmethod
-    # def find_by_id(cls, _id):
-    #     """Return user instance from database record"""
-    #     return cls.query.filter_by(id=_id).first()
