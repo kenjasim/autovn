@@ -2,6 +2,9 @@
 
 import argparse, os, pathlib, shutil, logging, sys
 from pathlib import Path
+
+from db import create_tables
+
 homedir = pathlib.Path().home()
 
 ################################################################################
@@ -66,9 +69,11 @@ if __name__ == '__main__':
                                 format='%(asctime)s, %(levelname)s, %(name)s, %(message)s')
 
     arguments = parseargs()
+
+    create_tables()
     
     if arguments["restapi"]:
-        RESTServer().start()
+        RESTServer(remote=True).start()
     elif arguments["cliconsole"]:
         if arguments["cliconsole"] != "default":
             console = Console(remote=True, url=arguments["cliconsole"]).cmdloop() 
