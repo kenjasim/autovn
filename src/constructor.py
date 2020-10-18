@@ -2,6 +2,7 @@ import yaml, pathlib, os
 from models.network import Network
 from models.host import Host
 from models.deployment import Deployment
+import logging
 
 from print_colours import Print
 from sqlalchemy.exc import OperationalError

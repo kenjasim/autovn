@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import argparse, os, pathlib, shutil, logging, sys
+from pathlib import Path
 homedir = pathlib.Path().home()
 
 ################################################################################
@@ -22,6 +23,9 @@ def config_folder():
         os.mkdir(str(homedir / ".avn" / "keys"))
         os.mkdir(str(homedir / ".avn" / "templates"))
         os.mkdir(str(homedir / ".avn" / "images"))
+        os.mkdir(str(homedir / ".avn" / "logs"))
+        os.mkdir(str(homedir / ".avn" / "certs"))
+        os.mkdir(str(homedir / ".avn" / "proxy"))
 
     # Makes the keys directory
     elif not os.path.isdir(str(homedir / ".avn" / "keys")):
@@ -34,7 +38,19 @@ def config_folder():
     # Makes the images directory
     elif not os.path.isdir(str(homedir / ".avn" / "images")):
         os.mkdir(str(homedir / ".avn" / "images"))
-
+    
+    # Makes the logs directory
+    elif not os.path.isdir(str(homedir / ".avn" / "logs")):
+        os.mkdir(str(homedir / ".avn" / "logs"))
+    
+    # Makes the certs directory
+    elif not os.path.isdir(str(homedir / ".avn" / "certs")):
+        os.mkdir(str(homedir / ".avn" / "certs"))
+    
+    # Makes the restapi proxy config directory
+    elif not os.path.isdir(str(homedir / ".avn" / "proxy")):
+        os.mkdir(str(homedir / ".avn" / "proxy"))
+            
 
 from cli import Console
 from restapi.server import RESTServer
@@ -46,7 +62,7 @@ if __name__ == '__main__':
 
     # Initialise logging handling 
     logging.basicConfig(level=logging.DEBUG,
-                                filename = str(homedir / ".avn" / "avn.log"),
+                                filename = str(homedir / ".avn" / "logs" / "avn.log"),
                                 format='%(asctime)s, %(levelname)s, %(name)s, %(message)s')
 
     arguments = parseargs()
