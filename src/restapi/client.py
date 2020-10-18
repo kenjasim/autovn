@@ -234,3 +234,15 @@ class RESTClient(object):
             return headers
         else:
             raise Exception("User not authenticated, please try logging in")
+    
+    @staticmethod
+    def post_template(data, filename): 
+        """
+        Send topology template to API server in json format.
+        """
+        headers = RESTClient.get_api_variables()
+        headers["filename"] = filename
+        url = RESTClient.server_url + "template" 
+        r = requests.post(url, headers=headers, json=data, verify=RESTClient.ssl_verify)
+        if r.status_code != 200:
+            raise Exception("Failed to Post template to server: " + r.text)

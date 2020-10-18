@@ -9,6 +9,7 @@ import os
 import shutil 
 import sys
 import functools
+import yaml
 from contextlib import redirect_stdout
 import socket
 
@@ -166,6 +167,22 @@ def get_networks():
     except Exception as e:
         handle_ex(e)
         return ("Error", 500)
+
+@app.route('/template', methods=['POST'])
+@make_secure()
+def receive_template():
+    data = request.json
+    headers = request.headers
+    if data is not None and "Filename" in headers:
+        filename = headers["Filename"]  
+        # Destination directory
+        template_dir = Path.home() / ".avn" / "templates" / filename
+        # Write template
+        with open(str(template_dir), 'w') as f:
+            yaml.dump(data, f)
+        return ("Template received", 200)
+    else:
+        return ("Error", 500) 
 
 @app.route('/host/<string:vmname>/ipv4', methods=['GET'])
 @make_secure()
