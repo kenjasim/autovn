@@ -20,6 +20,7 @@ import multiprocessing
 from pathlib import Path
 from tabulate import tabulate
 import threading
+from template import Template
 
 from resources import Hosts, SSHForward, Users
 
@@ -355,6 +356,41 @@ class Console(Cmd):
                 Users.post(cmds[0], password)
             else:
                 Print.print_warning("Passwords dont match")
+        except Exception as e:
+            handle_ex(e)
+    
+    ############################################
+    # Create template 
+    ############################################
+
+    def do_create(self, cmd):
+        """
+        Add a topology template to the application config folder.
+
+        Usage:
+            create -f <path/to/template.yaml>
+            create -g <github/url> 
+        """
+        # command validation
+        cmds = cmd.split()
+        if len(cmds) != 2:
+            Print.print_warning("Invalid number of arguments, see 'help create'")
+            return
+        # command execution
+        try:
+            temp = Template() 
+            # Main Cli (template > config-dir)
+            if cmds[0] == '-f' and not self.remote:
+                temp.copy_template(cmds[1]) 
+            # Remote Cli (template > client > json > server > yaml > config-dir)
+            elif cmds[0] == '-f' and self.remote:
+                temp.send_template(cmds[1]) 
+            # Git pull (git > config-dir)
+            elif cmds[0] == '-g':
+                temp.pull_template(cmds[1], self.remote) 
+            else: 
+                raise Exception("Invalid options, see 'help create'")
+
         except Exception as e:
             handle_ex(e)
 
