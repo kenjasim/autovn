@@ -68,6 +68,9 @@ class Host(Base):
         """Import vm .ova image into VirtualBox"""
         # Get the images folder
         images_path = Path().home() / ".avn" / "images" / self.image
+        # Check image exists
+        if not os.path.isfile(images_path):
+            raise Exception("Virtual machine '.ova'. template not found")
         # Form path to image
         cmd = 'VBoxManage import ' + "\"" + str(images_path) + "\"" + ' --vsys 0 --vmname ' + self.vmname
         subprocess.getoutput(cmd)

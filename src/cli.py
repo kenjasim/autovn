@@ -323,6 +323,10 @@ class Console(Cmd):
             if self.remote:
                  Print.print_warning("Running as remote client, RestAPI server not applicable.")
             self.server = RESTServer(remote, verbose=False)
+        except Exception as e:
+            handle_ex(e)
+            return
+        try:
             self.server.start()
         except Exception as e:
             handle_ex(e)
