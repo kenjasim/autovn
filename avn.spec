@@ -1,11 +1,14 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-block_cipher = None
+import shutil
+from pathlib import Path
+import os
 
+block_cipher = None
 
 a = Analysis(['src/avn.py'],
              binaries=[],
-             datas=[('src/misc/intro.txt', 'misc'), ('src/autossh/*.sh', 'autossh')],
+             datas=[('src/misc/intro.txt', 'misc'), ('src/autossh/*.sh', 'autossh'), ('src/restapi/proxy/*', 'restapi/proxy')],
              hiddenimports=['sqlalchemy.ext.baked'],
              hookspath=[],
              runtime_hooks=[],

@@ -3,6 +3,12 @@ from flask import Flask, Response, jsonify
 import multiprocessing, logging, threading
 from print_colours import Print
 import atexit
+import subprocess
+from pathlib import Path 
+import os
+import shutil 
+import sys
+from contextlib import redirect_stdout
 
 from resources import Hosts, Networks, SSHForward
 from topo import Topology
@@ -163,31 +169,100 @@ def stop_ssh_forward(deployment_name):
 class RESTServer(object):
     """Http WSGI Server to wrap Flask API app server."""
 
-    def __init__(self, address="", port=5000):
+    def __init__(self, remote, address="127.0.0.1", port=5000, rport=6001, verbose=True):
+        self.remote = remote
         self.address = address
         self.port = port
+        self.rport = rport
+        self.verbose = verbose
         self.http_server = None
-        # required for Mac Catalina  
+        # Required for Mac Catalina  
         try:
             multiprocessing.set_start_method("fork")
         except RuntimeError:
             pass
+        # Setup nginx server config files 
+        self.write_proxy_configs()
+        self.set_proxy_configs()
 
     def start(self):
         """Start Rest API server."""
         atexit.register(self.do_exit)
         self.http_server = WSGIServer((self.address, self.port), application=app, log=log, error_log=log)
-        self.proc = multiprocessing.Process(target=self.http_server.serve_forever)
+        self.proc = multiprocessing.Process(target=self.start_http_server)
         self.proc.start()
-        if self.address == "": 
-            self.address = "127.0.0.1"
-        Print.print_success("Server avaliable at: http://" + self.address + ":" + str(self.port) + "/")
+        # Start reverse proxy if remote
+        if not self.remote:
+            Print.print_success("Server avaliable at: http://" + self.address + ":" + str(self.port) + "/")
+        else: 
+            self.start_proxy() 
+            Print.print_success("Server avaliable at: https://" + "<public-ip>" + ":" + str(self.rport) + "/")
+
+    def start_http_server(self):
+        """Start rest api server, to be called within multiprocess.Process"""
+        if not self.verbose:
+            homedir = Path().home()
+            # Initialise logging handling 
+            logger = logging.getLogger()
+            sys.stdout.write = logger.info
+        self.http_server.serve_forever()  
+    
+    def write_proxy_configs(self):
+        """Create proxy configs files for nginx reverse proxy server"""
+        # Make reverse proxy config files 
+        proxy_path_src = Path(__file__).parent.absolute() / "proxy"
+        proxy_path_dst = Path().home() / ".avn" / "proxy"
+        if not os.path.isfile(str(proxy_path_dst / "nginx.conf")):
+            shutil.copy(str(proxy_path_src / "nginx.conf"), str(proxy_path_dst / "nginx.conf"))
+        if not os.path.isfile(str(proxy_path_dst / "mime.types")):    
+            shutil.copy(str(proxy_path_src / "mime.types"), str(proxy_path_dst / "mime.types"))
+    
+    def set_proxy_configs(self):
+        """Update nginx server configuration file's bind port"""
+        home_path = Path().home()
+        proxy_config_path = Path().home() / ".avn" / "proxy" / "nginx.conf"
+        nl = []
+        with open(str(proxy_config_path), 'r') as f:
+            lines = list(f)
+            for line in lines: 
+                if "listen" in line: 
+                    nl.append("       listen       " + str(self.rport) + " ssl;\n")
+                elif "$HOME" in line: 
+                    nl.append(line.replace("$HOME", str(home_path)))
+                else: 
+                    nl.append(line)  
+        with open(str(proxy_config_path), 'r+') as f:
+            f.writelines(nl) 
+
+    def start_proxy(self):
+        """Start nginx reverse proxy server for external access."""
+        # Generate certificates if non-exist 
+        cert_path = Path().home() / ".avn" / "certs" / "cert.pem"
+        cert_key_path = Path().home() / ".avn" / "certs" / "cert.key"
+        if not (os.path.isfile(str(cert_path)) and os.path.isfile(str(cert_key_path))):
+            cmd = "openssl req -x509 -nodes -days 365 -newkey rsa:2048"
+            cmd += " -keyout {0} ".format(cert_key_path)
+            cmd += " -out {0}".format(cert_path)
+            # Subject fields 
+            cmd += " -subj "
+            subjects = ["/C=UK", "/ST=London", "/L=London", "/O=AVN", "/CN=autovirtualnetwork"]
+            for subject in subjects:
+                cmd += subject
+            # Create certificates in .avn/certs config dir 
+            subprocess.getoutput(cmd)
+        # Starting nginx server
+        server_config_path = Path().home() / ".avn" / "proxy" / "nginx.conf"
+        cmd = "nginx -c {0}".format(server_config_path)
+        subprocess.getoutput(cmd)
         
     def stop(self):
         """Strop Rest API server"""
         self.http_server.stop()
         self.http_server.close()
         self.proc.terminate()
+        # Stop nginx reverse proxy server
+        cmd = "nginx -s stop"
+        subprocess.getoutput(cmd)
 
     def do_exit(self):
         """Handle exit, and cleanup SSH forwarding servers for Rest API only mode"""

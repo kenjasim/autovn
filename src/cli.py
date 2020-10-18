@@ -248,11 +248,11 @@ class Console(Cmd):
     # Stop SSH Forwarding 
     ############################################
 
-    def do_stopsshforwarding(self, cmd):
+    def do_stopsshforward(self, cmd):
         """
         Stop the ssh forwarding server per deployment 
         Usage:
-            stopsshforwarding <deployment-name>
+            stopsshforward <deployment-name>
         """
         # command validation
         cmds = cmd.split()
@@ -278,13 +278,25 @@ class Console(Cmd):
         Launch the RestAPI Server.
         Usage:
             server
+            server r (Opens RestAPI Server to public network with SSL encryption, https)
         """
+        # command validation
+        cmds = cmd.split()
+        remote = False
+        if len(cmds) == 0:
+            Print.print_information("Starting rest API on localhost only (http)")
+        elif len(cmds) == 1 and cmds[0] == 'r':
+            remote = True
+            Print.print_information("Starting rest API, publicly accesible (https)")
+        else: 
+            Print.print_warning("Invalid number of arguments, see 'help stopsshforwarding'")
+            return
+        # command execution 
         try:
+            Print.print_information("Starting RestAPI server...")
             if self.remote:
                  Print.print_warning("Running as remote client, RestAPI server not applicable.")
-                 return
-            Print.print_information("Starting RestAPI server...")
-            self.server = RESTServer()
+            self.server = RESTServer(remote, verbose=False)
             self.server.start()
         except Exception as e:
             handle_ex(e)
