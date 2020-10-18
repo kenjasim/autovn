@@ -1,5 +1,6 @@
 from gevent.pywsgi import WSGIServer, LoggingLogAdapter
-from flask import Flask, Response, jsonify
+from flask import Flask, Response, jsonify, request
+from flask_jwt import JWT
 import multiprocessing, logging, threading
 from print_colours import Print
 import atexit
@@ -8,9 +9,11 @@ from pathlib import Path
 import os
 import shutil 
 import sys
+import functools
 from contextlib import redirect_stdout
 
-from resources import Hosts, Networks, SSHForward
+from security import authorise, authenticate
+from resources import Hosts, Networks, SSHForward, Users
 from topo import Topology
 
 # Initialise app-rest Api server 
@@ -21,6 +24,21 @@ app.use_reloader = False
 logger = logging.getLogger()
 log = LoggingLogAdapter(logger, level=10)
 
+#authentication decorator
+def make_secure():
+    def decorator(func):
+        @functools.wraps(func)
+        def secure_function(*args, **kwargs):
+            username = request.headers.get('username')
+            token = request.headers.get('token')
+            if authorise(username, token):
+                return func(*args, **kwargs)
+            else:
+                return jsonify({'message': "Token authentication failed"}), 401
+        return secure_function
+    return decorator
+
+
 def handle_ex(exception):
     """Print exception and traceback."""
     logging.exception(exception)
@@ -29,6 +47,24 @@ def handle_ex(exception):
 ################################################################################
 # Rest API Endpoints
 ################################################################################
+@app.route('/', methods=['GET'])
+def check():
+    return ("<h1>Server avaliable.</h1>", 200)
+
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    print(data)
+    if 'username' in data and 'password' in data:
+        try:
+            token = authenticate(data['username'], data['password'])
+            if token:
+                return jsonify([{'token': token}]), 200
+            else:
+                return jsonify({'message': "Username and password failed to authenticate"}), 401
+        except Exception as e:
+            handle_ex(e)
+            return ("Error", 500) 
 
 @app.route('/build', methods=['PUT'])
 @app.route('/build/<string:template>', methods=['PUT'])
@@ -40,11 +76,8 @@ def build(template="default.yaml"):
         handle_ex(e)
         return ("Error", 500)
 
-@app.route('/', methods=['GET'])
-def check():
-    return ("<h1>Server avaliable.</h1>", 200)
-
 @app.route('/start/<string:deployment_name>', methods=['PUT'])
+@make_secure()
 def start(deployment_name):
     try:
         threading.Thread(target=Topology.start, args=(deployment_name, )).start()
@@ -54,6 +87,7 @@ def start(deployment_name):
         return ("Error", 500)
 
 @app.route('/stop/<string:deployment_name>', methods=['PUT'])
+@make_secure()
 def stop(deployment_name):
     try:
         threading.Thread(target=Topology.stop, args=(deployment_name, )).start()
@@ -63,6 +97,7 @@ def stop(deployment_name):
         return ("Error", 500)
 
 @app.route('/restart/<string:deployment_name>', methods=['PUT'])
+@make_secure()
 def restart(deployment_name):
     try:
         threading.Thread(target=Topology.restart, args=(deployment_name, )).start()
@@ -72,6 +107,7 @@ def restart(deployment_name):
         return ("Error", 500)
 
 @app.route('/keys/<string:deployment_name>', methods=['PUT'])
+@make_secure()
 def keys(deployment_name):
     try:
         threading.Thread(target=Topology.send_keys, args=(deployment_name, )).start()
@@ -82,6 +118,7 @@ def keys(deployment_name):
 
     
 @app.route('/destroy/<string:deployment_name>', methods=['DELETE'])
+@make_secure()
 def destroy(deployment_name):
     try:
         threading.Thread(target=Topology.destroy, args=(deployment_name, )).start()
@@ -91,6 +128,7 @@ def destroy(deployment_name):
         return ("Error", 500)
 
 @app.route('/details/hosts', methods=['GET'])
+@make_secure()
 def host_details():
     try:
         host_data = Topology.host_details()
@@ -100,6 +138,7 @@ def host_details():
         return ("Error", 500)
 
 @app.route('/details/networks', methods=['GET'])
+@make_secure()
 def network_details():
     try:
         network_data = Topology.network_details()
@@ -109,6 +148,7 @@ def network_details():
         return ("Error", 500)
 
 @app.route('/hosts', methods=['GET'])
+@make_secure()
 def get_hosts():
     try:
         hosts = Hosts().get_all()
@@ -118,6 +158,7 @@ def get_hosts():
         return ("Error", 500)
 
 @app.route('/networks', methods=['GET'])
+@make_secure()
 def get_networks():
     try:
         networks = Networks().get_all()
@@ -127,6 +168,7 @@ def get_networks():
         return ("Error", 500)
 
 @app.route('/host/<string:vmname>/ipv4', methods=['GET'])
+@make_secure()
 def get_ip(vmname):
     try:
         ip = Hosts().get_ip(vmname)
@@ -136,6 +178,7 @@ def get_ip(vmname):
         return ("Error", 500)
 
 @app.route('/host/<string:vmname>/ssh_port', methods=['GET'])
+@make_secure()
 def get_ssh_remote_port(vmname):
     try:
         port = Hosts().get_ssh_remote_port(vmname)
@@ -145,6 +188,7 @@ def get_ssh_remote_port(vmname):
         return ("Error", 500)
 
 @app.route('/sshforward/<string:deployment_name>', methods=['PUT'])
+@make_secure()
 def ssh_forward(deployment_name):
     try:
         Topology.start_ssh_forwarder(deployment_name)
@@ -154,6 +198,7 @@ def ssh_forward(deployment_name):
         return ("Error", 500)
 
 @app.route('/stopsshforwarding/<string:deployment_name>', methods=['DELETE'])
+@make_secure()
 def stop_ssh_forward(deployment_name):
     try:
         Topology.stop_ssh_forwarders(deployment_name)
@@ -161,6 +206,15 @@ def stop_ssh_forward(deployment_name):
     except Exception as e:
         handle_ex(e)
         return ("Error", 500)
+
+# @app.route('/register', methods=['PUT'])
+# def register(deployment_name):
+#     try:
+#         Topology.stop_ssh_forwarders(deployment_name)
+#         return "SSH forwarding servers stopped", 200
+#     except Exception as e:
+#         handle_ex(e)
+#         return ("Error", 500)
 
 ################################################################################
 # Rest API Server Object 

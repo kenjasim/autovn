@@ -21,7 +21,7 @@ from pathlib import Path
 from tabulate import tabulate
 import threading
 
-from resources import Hosts, SSHForward
+from resources import Hosts, SSHForward, Users
 
 class Console(Cmd):
     """Command Line Interface for the Automated Virtual Network (AVN) application."""
@@ -52,6 +52,30 @@ class Console(Cmd):
 
         #Exit cleanup on keyboard interrupt
         atexit.register(self.do_exit, "")
+
+    ############################################
+    # Login
+    ############################################
+
+    def do_login(self, cmd):
+        """
+        Login to remote rest api (remote only).
+        Usage:
+            login <username> <password>
+        """
+        cmds = cmd.split()
+        if len(cmds) != 2:
+            Print.print_warning("Invalid number of arguments, see 'help login'")
+            return
+
+        try:
+            Print.print_information("Logging in...")
+            if not self.remote:
+                Print.print_information("Non remote client doesnt need authentication")
+                return
+            self.client.login(cmds[0], cmds[1])
+        except Exception as e:
+            handle_ex(e)
 
     ############################################
     # Build Network Topology
@@ -162,6 +186,8 @@ class Console(Cmd):
                 print(create_table(self.client.host_details()))
             if cmds[0] == 'n':
                 print(create_table(self.client.network_details()))
+            if cmds[0] == 'u':
+                print(create_table(Users.get_all()))
         except Exception as e:
             handle_ex(e)
 
@@ -301,6 +327,64 @@ class Console(Cmd):
         except Exception as e:
             handle_ex(e)
 
+    ############################################
+    # Register rest API user
+    ############################################
+
+    def do_register(self, cmd):
+        """
+        Register a user to the Rest API
+
+        Usage:
+            register <username>
+        """
+        # command validation
+        cmds = cmd.split()
+        if len(cmds) != 1:
+            Print.print_warning("Invalid number of arguments, see 'help register'")
+            return
+        # command execution
+        try:
+            if self.remote:
+                Print.print_warning("Cannot create account using remote registeration")
+                return
+            password = input("Enter Password: ")
+            password_check = input ("Re-enter Password: ")
+            if password == password_check:
+                Print.print_information("Passwords match, creating account")
+                Users.post(cmds[0], password)
+            else:
+                Print.print_warning("Passwords dont match")
+        except Exception as e:
+            handle_ex(e)
+
+    ############################################
+    # Remove rest API user
+    ############################################
+
+    def do_remove(self, cmd):
+        """
+        Remove a user from the Rest API
+
+        Usage:
+            remove <username>
+        """
+        # command validation
+        cmds = cmd.split()
+        if len(cmds) != 1:
+            Print.print_warning("Invalid number of arguments, see 'help register'")
+            return
+        # command execution
+        try:
+            if self.remote:
+                Print.print_warning("Cannot create account using remote registeration")
+                return
+
+            # Remove user
+            Users.remove_user(cmds[0])
+        except Exception as e:
+            handle_ex(e)
+    
     ############################################
     # Network Destroy
     ############################################

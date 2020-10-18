@@ -164,7 +164,7 @@ class Network(Base):
         Print.print_success("Destroyed network ")
 
     def dict(self):
-        """Return an ordered dictionary of network properties for printing purposes."""
+        """Return an ordered dictionary of user properties for printing purposes."""
         # Get the dict and organised keys
         cdict = self.__dict__
         # Create and return a new dictionary

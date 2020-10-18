@@ -305,7 +305,7 @@ class Host(Base):
         """Return an ordered dictionary for printing purposes."""
         # Get the dict and organised keys
         dict = self.__dict__
-        keys = ["id", "vmname", "image", "username", "password"]
+        keys = ["id", "vmname", "image", "username"]
 
         # Create and return a new dictionary
         new_dict= {}
