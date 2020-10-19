@@ -98,7 +98,7 @@ def remove_user(username, password):
         raise Exception("User not in database")
     
     # Authorise request
-    if not check_password(user, old_pass):
+    if not check_password(user, password):
         Print.print_warning("Failed to authenticate")
 
     else:
