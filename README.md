@@ -204,6 +204,12 @@ For remote client mode, see Server chapter.
 >>> keys <deployment-id>
 ```
 
+### Start/Stop SSH Forwarding
+```python
+>>> sshforward start <deployment-id>
+>>> sshforward stop <deployment-id>
+```
+
 ### Exit Application 
 ```python
 >>> exit 
