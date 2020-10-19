@@ -115,7 +115,7 @@ hosts:
     password: "ved"
     networks:
       - hoif1
-    internet_access: True
+    internet_adapter: bridged
   host2:
     image: "vm_templates/Ubuntu Server 20.04.ova"
     username: "dev"
@@ -123,14 +123,14 @@ hosts:
     networks:
       - hoif1
       - hoif2    
-    internet_access: True
+    internet_adapter: bridged
   host3:
     image: "vm_templates/Ubuntu Server 20.04.ova"
     username: "dev"
     password: "ved"
     networks:
       - hoif2
-    internet_access: True
+    internet_adapter: bridged
 ```
 
 

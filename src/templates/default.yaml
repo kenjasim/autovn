@@ -18,19 +18,19 @@ hosts:
     password: "ved"
     networks:
       - hoif1
-    internet_access: True
+    internet_adapter: bridged
   host2:
     image: "Ubuntu Server 20.04.ova"
     username: "dev"
     password: "ved"
     networks:
       - hoif1
-    internet_access: True
+    internet_adapter: bridged
   host3:
     image: "Ubuntu Server 20.04.ova"
     username: "dev"
     password: "ved"
     networks:
       - hoif1
-    internet_access: True
+    internet_adapter: bridged
 

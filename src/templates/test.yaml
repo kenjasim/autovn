@@ -18,5 +18,5 @@ hosts:
     password: "ved"
     networks:
       - hoif1
-    internet_access: True
+    # internet_adapter: nat
 

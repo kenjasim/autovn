@@ -117,10 +117,10 @@ class Constructor():
                     # Point to next free adapter 
                     adapter += 1
                     # Assign network access if required to the next adapter
-                    if values["internet_access"]:
+                    if "internet_adapter" in values:
                         # Check a free adapter is avaliable 
                         if adapter <= 8:
-                            self.hosts[vmname].assign_internet(adapter)
+                            self.hosts[vmname].assign_internet(adapter, values["internet_adapter"])
                         else:
                             raise Exception("Error adapter count for host exceeded")
         else:
@@ -146,7 +146,7 @@ class Constructor():
 
     def is_valid_host_template(self, values): 
         """Check all required key-values are present in the hosts template section.""" 
-        if "image" and "username" and "password" and "networks" and "internet_access" in values:
+        if "image" and "username" and "password" and "networks" in values:
             return True 
         raise Exception("Host template invalid. Please ensure all fields are present")
 
