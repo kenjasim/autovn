@@ -37,13 +37,13 @@ class RESTClient(object):
             os.environ["AVN_API_TOKEN"] = token
 
     @staticmethod
-    def register(username, password):
+    def register(username, passhash):
         """
         Register a new user to the REST API
         """
         headers = RESTClient.get_api_variables()
         url = RESTClient.server_url + "register" 
-        user_details = {'username': username, 'password': password}
+        user_details = {'username': username, 'passhash': passhash}
         r = requests.post(url, headers=headers, json=user_details, verify=RESTClient.ssl_verify)
         if r.status_code != 201:
             raise Exception("Failed to register user: " + r.text)
@@ -71,7 +71,6 @@ class RESTClient(object):
         r = requests.post(url, headers=headers, json=user_details, verify=RESTClient.ssl_verify)
         if r.status_code != 200:
             raise Exception("Failed to remove user: " + r.text)
-
 
     @staticmethod
     def build(template_file="default.yaml"): 

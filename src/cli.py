@@ -22,7 +22,7 @@ from tabulate import tabulate
 import threading
 from template import Template
 from getpass import getpass
-from security import change_password, remove_user
+from security import hash_password, change_password, remove_user
 
 from resources import Hosts, SSHForward, Users
 
@@ -146,7 +146,6 @@ class Console(Cmd):
         except Exception as e:
             handle_ex(e)
 
-
     ############################################
     # Build Network Topology
     ############################################
@@ -259,6 +258,7 @@ class Console(Cmd):
             if cmds[0] == 'u':
                 if self.remote:
                     Print.print_warning("Can't see users as remote client")
+                    return
                 print(create_table(Users.get_all()))
         except Exception as e:
             handle_ex(e)
@@ -295,7 +295,6 @@ class Console(Cmd):
         except Exception as e:
             handle_ex(e)
     
-
     ############################################
     # Distribute Keys
     ############################################
@@ -410,12 +409,16 @@ class Console(Cmd):
             password_check = getpass("Re-Enter Password: ")
             if password != password_check:
                 Print.print_warning("Passwords dont match")
-            elif self.remote:
-                Print.print_information("Passwords match, creating account")
-                self.client.register(cmds[0], password)
+                return
             else:
                 Print.print_information("Passwords match, creating account")
-                Users.post(cmds[0], password)
+            # Generate password hash
+            passhash = hash_password(password)
+            # Create account
+            if self.remote:
+                self.client.register(cmds[0], passhash)
+            else:
+                Users.post(cmds[0], passhash)
         except Exception as e:
             handle_ex(e)
     
@@ -454,7 +457,6 @@ class Console(Cmd):
         except Exception as e:
             handle_ex(e)
 
-    
     ############################################
     # Network Destroy
     ############################################
