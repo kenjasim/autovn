@@ -30,12 +30,14 @@ def default_user():
     users = Users.get_all()
     if users is None:
         Print.print_information("Creating admin user...")
-        password = getpass("Enter admin Password: ")
-        password_check = getpass("Re-Enter admin Password: ")
-        if password != password_check:
-            Print.print_warning("Passwords dont match")
-        else:
-            Users.post("admin", password)
+        while True:
+            password = getpass("Enter admin Password: ")
+            password_check = getpass("Re-Enter admin Password: ")
+            if password != password_check:
+                Print.print_warning("Passwords dont match")
+            else:
+                break
+        Users.post("admin", password)
 
 def change_password(username, old_pass, new_pass):
     """Change a users password"""

@@ -270,27 +270,36 @@ $ python avn.py -c <http://127.0.0.1:5000/>
 
 ## Authentication and Authorisation
 
-When accessing the application via the RestApi Server all requests must be authorised for a given user. The RestApi, being stateless, provisions a session token upon login that is used to authorisation future Api calls. 
+When accessing the application via the RestApi Server all requests must be authorised for a given user. The RestApi, being stateless, provisions a session token upon login that is used to authenticate future Api calls.
 
-### Default User 
+### Default User
 
-```bash
-#################
+```python
+[i] Creating admin user...
+Enter admin Password:
 ```
 
+If the database has no active users, when the user starts the rest API they must enter an admin password to create the default user.
+
 ### Register User 
-```bash
-#################
+```pyhton
+>>> register johndoe
+Enter Password: 
 ```
 
 ### Remove User 
-```bash
-#################
+```python
+>>> remove johndoe
+[i] Removing user...
+Enter Password: 
 ```
 
 ### Change user password
-```bash
-#################
+```python
+>>> passwd johndoe
+[i] Changing user password...
+Enter old Password: 
+Enter new Password: 
 ```
 
 ### Server Login (Client-mode) 
