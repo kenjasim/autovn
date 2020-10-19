@@ -8,12 +8,12 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     username = Column(String(80))
-    password = Column(String(80))
+    passhash = Column(String(128))
     token = relationship("Token")
 
-    def __init__(self, username, password):
+    def __init__(self, username, passhash):
         self.username = username
-        self.password = password
+        self.passhash = passhash
 
     def write_to_db(self):
         """Save user to database"""

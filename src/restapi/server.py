@@ -42,7 +42,7 @@ def make_secure():
 
 def handle_ex(exception):
     """Print exception and traceback."""
-    logging.exception("Server error: " + exception)
+    logging.exception("Server error: " + str(exception))
     Print.print_error(exception)
 
 ################################################################################
@@ -71,9 +71,9 @@ def login():
 @make_secure()
 def register():
     data = request.json
-    if 'username' in data and 'password' in data:
+    if 'username' in data and 'passhash' in data:
         try:
-            Users.post(data['username'], data['password'])
+            Users.post(data['username'], data['passhash'])
             return jsonify([{'message': 'The user has been successfuly created'}]), 201
         except Exception as e:
             handle_ex(e)
@@ -272,15 +272,6 @@ def stop_ssh_forward(deployment_name):
     except Exception as e:
         handle_ex(e)
         return ("Error", 500)
-
-# @app.route('/register', methods=['PUT'])
-# def register(deployment_name):
-#     try:
-#         Topology.stop_ssh_forwarders(deployment_name)
-#         return "SSH forwarding servers stopped", 200
-#     except Exception as e:
-#         handle_ex(e)
-#         return ("Error", 500)
 
 ################################################################################
 # Rest API Server Object 

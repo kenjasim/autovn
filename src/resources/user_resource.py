@@ -5,13 +5,13 @@ from getpass import getpass
 class Users():
 
     @staticmethod
-    def post(username, password):
+    def post(username, passhash):
         """add the user to the database"""
         username_exists = Session.query(User).filter_by(username=username).first()
         if username_exists:
             raise Exception("Username already taken")
 
-        user = User(username, password)
+        user = User(username, passhash)
         user.write_to_db()
 
     @staticmethod
