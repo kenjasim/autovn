@@ -37,6 +37,43 @@ class RESTClient(object):
             os.environ["AVN_API_TOKEN"] = token
 
     @staticmethod
+    def register(username, password):
+        """
+        Register a new user to the REST API
+        """
+        headers = RESTClient.get_api_variables()
+        url = RESTClient.server_url + "register" 
+        user_details = {'username': username, 'password': password}
+        r = requests.post(url, headers=headers, json=user_details, verify=RESTClient.ssl_verify)
+        if r.status_code != 201:
+            raise Exception("Failed to register user: " + r.text)
+
+    @staticmethod
+    def change_password(username, old_password, new_password):
+        """
+        Register a new user to the REST API
+        """
+        headers = RESTClient.get_api_variables()
+        url = RESTClient.server_url + "passwd" 
+        user_details = {'username': username, 'old_password': old_password, 'new_password': new_password}
+        r = requests.post(url, headers=headers, json=user_details, verify=RESTClient.ssl_verify)
+        if r.status_code != 200:
+            raise Exception("Failed to change password " + r.text)
+
+    @staticmethod
+    def remove_user(username, password):
+        """
+        Remove a user from the REST API
+        """
+        headers = RESTClient.get_api_variables()
+        url = RESTClient.server_url + "remove" 
+        user_details = {'username': username, 'password': password}
+        r = requests.post(url, headers=headers, json=user_details, verify=RESTClient.ssl_verify)
+        if r.status_code != 200:
+            raise Exception("Failed to remove user: " + r.text)
+
+
+    @staticmethod
     def build(template_file="default.yaml"): 
         """
         Request AVN Rest API to build topology from configuration template file.

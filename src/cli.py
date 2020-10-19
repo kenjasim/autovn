@@ -21,6 +21,8 @@ from pathlib import Path
 from tabulate import tabulate
 import threading
 from template import Template
+from getpass import getpass
+from security import change_password, remove_user
 
 from resources import Hosts, SSHForward, Users
 
@@ -62,21 +64,88 @@ class Console(Cmd):
         """
         Login to remote rest api (remote only).
         Usage:
-            login <username> <password>
+            login <username>
         """
         cmds = cmd.split()
-        if len(cmds) != 2:
+        if len(cmds) != 1:
             Print.print_warning("Invalid number of arguments, see 'help login'")
             return
 
         try:
-            Print.print_information("Logging in...")
             if not self.remote:
                 Print.print_information("Non remote client doesnt need authentication")
                 return
-            self.client.login(cmds[0], cmds[1])
+
+            Print.print_information("Logging in...")
+            password = getpass("Enter Password: ")
+            self.client.login(cmds[0], password)
         except Exception as e:
             handle_ex(e)
+
+    ############################################
+    # password
+    ############################################
+
+    def do_passwd(self, cmd):
+        """
+        Change username for REST API user.
+        Usage:
+            passwd <username>
+        """
+        cmds = cmd.split()
+        if len(cmds) != 1:
+            Print.print_warning("Invalid number of arguments, see 'help passwd'")
+            return
+
+        try:
+            Print.print_information("Changing user password...")
+            # Enter in the passwords
+            curr_password = getpass("Enter old Password: ")
+            password = getpass("Enter new Password: ")
+            password_check = getpass("Re-Enter new Password: ")
+            if password != password_check:
+                Print.print_warning("Passwords dont match")
+                return
+            elif self.remote:
+                self.client.change_password(cmds[0], curr_password, password)
+            else:
+                change_password(cmds[0], curr_password, password)
+                    
+        except Exception as e:
+            handle_ex(e)
+
+    ############################################
+    # Remove user
+    ############################################
+
+    def do_remove(self, cmd):
+        """
+        Remove rest api user.
+        Usage:
+            remove <username>
+        """
+        cmds = cmd.split()
+        if len(cmds) != 1:
+            Print.print_warning("Invalid number of arguments, see 'help passwd'")
+            return
+
+        try:
+            Print.print_information("Removing user...")
+            # Enter in the passwords
+            password = getpass("Enter Password: ")
+            password_check = getpass("Re-Enter Password: ")
+            
+            if password != password_check:
+                Print.print_warning("Passwords dont match")
+                return
+            elif self.remote:
+                self.client.remove_user(cmds[0], password)
+            else:
+                remove_user(cmds[0], password)
+                    
+        except Exception as e:
+            handle_ex(e)
+
 
     ############################################
     # Build Network Topology
@@ -256,43 +325,27 @@ class Console(Cmd):
         """
         Startup SSH forwarders for remote host ssh connection
         Usage:
-            keys <deployment-name> 
+            sshforward [option] <deployment-name> 
+            Options:
+                start:  starts ssh forwarding server(s)
+                stop:   stops ssh forwarding server(s)
         """
         # command validation
         cmds = cmd.split()
-        if len(cmds) != 1:
+        if len(cmds) != 2:
             Print.print_warning("Invalid number of arguments, see 'help sshforward'")
             return
 
         # command execution
         try:
-            Print.print_information("Starting SSH forwarder server...")
-            self.client.start_ssh_forwarder(cmds[0])
-        except Exception as e:
-            handle_ex(e)
-
-    ############################################
-    # Stop SSH Forwarding 
-    ############################################
-
-    def do_stopsshforward(self, cmd):
-        """
-        Stop the ssh forwarding server per deployment 
-        Usage:
-            stopsshforward <deployment-name>
-        """
-        # command validation
-        cmds = cmd.split()
-        if len(cmds) != 1:
-            Print.print_warning("Invalid number of arguments, see 'help stopsshforwarding'")
-            return
-
-        # command execution 
-        try:
-            Print.print_information("Killing ssh forwarding processes...")
-            # if self.server:
-            #     self.server.stop()
-            self.client.stop_ssh_forwarders(cmds[0])
+            if cmds[0] == "start":
+                Print.print_information("Starting SSH forwarder server...")
+                self.client.start_ssh_forwarder(cmds[1])
+            elif cmds[0] == "stop":
+                Print.print_information("Killing ssh forwarding processes...")
+                self.client.stop_ssh_forwarders(cmds[1])
+            else:
+                Print.print_warning("Invalid option, see 'help sshforward'")
         except Exception as e:
             handle_ex(e)
 
@@ -350,16 +403,17 @@ class Console(Cmd):
             return
         # command execution
         try:
-            if self.remote:
-                Print.print_warning("Cannot create account using remote registeration")
-                return
-            password = input("Enter Password: ")
-            password_check = input ("Re-enter Password: ")
-            if password == password_check:
+            # Enter a password for the user
+            password = getpass("Enter Password: ")
+            password_check = getpass("Re-Enter Password: ")
+            if password != password_check:
+                Print.print_warning("Passwords dont match")
+            elif self.remote:
+                Print.print_information("Passwords match, creating account")
+                self.client.register(cmds[0], password)
+            else:
                 Print.print_information("Passwords match, creating account")
                 Users.post(cmds[0], password)
-            else:
-                Print.print_warning("Passwords dont match")
         except Exception as e:
             handle_ex(e)
     
@@ -398,32 +452,6 @@ class Console(Cmd):
         except Exception as e:
             handle_ex(e)
 
-    ############################################
-    # Remove rest API user
-    ############################################
-
-    def do_remove(self, cmd):
-        """
-        Remove a user from the Rest API
-
-        Usage:
-            remove <username>
-        """
-        # command validation
-        cmds = cmd.split()
-        if len(cmds) != 1:
-            Print.print_warning("Invalid number of arguments, see 'help register'")
-            return
-        # command execution
-        try:
-            if self.remote:
-                Print.print_warning("Cannot create account using remote registeration")
-                return
-
-            # Remove user
-            Users.remove_user(cmds[0])
-        except Exception as e:
-            handle_ex(e)
     
     ############################################
     # Network Destroy

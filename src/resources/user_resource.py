@@ -1,5 +1,6 @@
 from models.user import User
 from db import Session
+from getpass import getpass
 
 class Users():
 
@@ -22,8 +23,8 @@ class Users():
             for user in users:
                 user_list.append(user.dict())
             return user_list
-        
-        raise Exception("No users in database")
+        else:
+            return 
 
     @staticmethod
     def remove_user(username):

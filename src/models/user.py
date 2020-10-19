@@ -19,6 +19,9 @@ class User(Base):
         """Save user to database"""
         Session.add(self)
         Session.commit()
+
+    def update_to_db(self):
+        Session.commit()
     
     def dict(self):
         """Return an ordered dictionary for printing purposes."""
