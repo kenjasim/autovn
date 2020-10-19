@@ -13,7 +13,7 @@ import yaml
 from contextlib import redirect_stdout
 import socket
 
-from security import authorise, authenticate
+from security import authorise, authenticate, default_user, change_password, remove_user
 from resources import Hosts, Networks, SSHForward, Users
 from topo import Topology
 
@@ -42,7 +42,7 @@ def make_secure():
 
 def handle_ex(exception):
     """Print exception and traceback."""
-    logging.exception(exception)
+    logging.exception("Server error: " + exception)
     Print.print_error(exception)
 
 ################################################################################
@@ -67,8 +67,57 @@ def login():
             handle_ex(e)
             return ("Error", 500) 
 
+@app.route('/register', methods=['POST'])
+@make_secure()
+def register():
+    data = request.json
+    if 'username' in data and 'password' in data:
+        try:
+            Users.post(data['username'], data['password'])
+            return jsonify([{'message': 'The user has been successfuly created'}]), 201
+        except Exception as e:
+            handle_ex(e)
+            return ("Error", 500)
+
+@app.route('/passwd', methods=['POST'])
+@make_secure()
+def password():
+    data = request.json
+    if (request.headers.get('username') != data['username']):
+        if request.headers.get('username') != 'admin':
+            return ("Unauthorised"), 400
+    
+    if 'username' in data and 'old_password' in data and 'new_password' in data:
+        try:
+            change_password(data['username'], data['old_password'], data['new_password'])
+            return jsonify([{'message': 'The users password been successfuly changed'}]), 200
+        except Exception as e:
+            handle_ex(e)
+            return ("Error", 500) 
+    else:
+        return "Unrecognisable data", 422
+
+@app.route('/remove', methods=['POST'])
+@make_secure()
+def remove():
+    data = request.json
+    if (request.headers.get('username') != data['username']):
+        if request.headers.get('username') != 'admin':
+            return ("Unauthorised"), 400
+    
+    if 'username' in data and 'password' in data:
+        try:
+            remove_user(data['username'], data['password'])
+            return jsonify([{'message': 'The users has been removed'}]), 200
+        except Exception as e:
+            handle_ex(e)
+            return ("Error", 500) 
+    else:
+        return "Unrecognisable data", 422
+
 @app.route('/build', methods=['PUT'])
 @app.route('/build/<string:template>', methods=['PUT'])
+@make_secure()
 def build(template="default.yaml"):
     try:
         threading.Thread(target=Topology.build, args=(template,)).start()
@@ -265,6 +314,8 @@ class RESTServer(object):
         """Start Rest API server."""
         # Start server as separate process 
         atexit.register(self.do_exit)
+        # Create a default user
+        default_user()
         self.http_server = WSGIServer((self.address, self.port), application=app, log=log, error_log=log)
         self.proc = multiprocessing.Process(target=self.start_http_server)
         self.proc.start()
