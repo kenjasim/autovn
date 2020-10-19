@@ -282,7 +282,7 @@ Enter admin Password:
 If the database has no active users, when the user starts the rest API they must enter an admin password to create the default user.
 
 ### Register User 
-```pyhton
+```python
 >>> register johndoe
 Enter Password: 
 ```
