@@ -253,10 +253,12 @@ class Console(Cmd):
         # command execution
         try:
             if cmds[0] == 'h':
-                print(create_table(self.client.host_details()))
+                print(create_table(self.client.host_details(), header=["vmname", "VMState", "ostype", "cpus", "memory", "deployment"]))
             if cmds[0] == 'n':
-                print(create_table(self.client.network_details()))
+                print(create_table(self.client.network_details(), header=["vmname", "name", "netname", "mac", "ip", "deployment"]))
             if cmds[0] == 'u':
+                if self.remote:
+                    Print.print_warning("Can't see users as remote client")
                 print(create_table(Users.get_all()))
         except Exception as e:
             handle_ex(e)
@@ -521,7 +523,7 @@ def handle_ex(exception):
 # Formatting
 ################################################################################
 
-def create_table(items):
+def create_table(items, header = []):
     """
     Create and print a table to the console from a dict.
     Options:
@@ -529,7 +531,11 @@ def create_table(items):
     Returns
         output (str): formatted string
     """
-    header = items[0].keys()
+    if header == []:
+        header = items[0].keys()
+    else:
+        items = [{val: item[val] for val in header} for item in items]
+    
     rows =  [item.values() for item in items]
     return tabulate(rows, header,tablefmt="fancy_grid")
 
