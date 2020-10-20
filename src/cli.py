@@ -178,16 +178,21 @@ class Console(Cmd):
         """
         Start virtual machines within a deployment.
         Usage:
-            start <deployment-name>    
+            start <deployment-name>   
+            start <deployment-name> <vmname>  
         """
         # command validation
         cmds = cmd.split()
-        if len(cmds) != 1:
+        if len(cmds) == 0 or len(cmds) > 2:
             Print.print_warning("Invalid number of arguments, see 'help start'")
             return
         try:
-            Print.print_information("Starting network...")
-            self.client.start(cmds[0])
+            if len(cmds) == 1:
+                Print.print_information("Starting deployment...")
+                self.client.start(cmds[0])
+            if len(cmds) == 2:
+                Print.print_information("Starting host...")
+                self.client.start(cmds[0], cmds[1])
         except Exception as e:
             handle_ex(e)
     
@@ -200,14 +205,19 @@ class Console(Cmd):
         Restart the virtual machines within a deployment.
         Usage:
             restart <deployment-name>  
+            restart <deployment-name> <vmname> 
         """
         cmds = cmd.split()
-        if len(cmds) != 1:
+        if len(cmds) == 0 or len(cmds) > 2:
             Print.print_warning("Invalid number of arguments, see 'help restart'")
             return
         try:
-            Print.print_information("Restarting virtual machines...")
-            self.client.restart(cmds[0])
+            if len(cmds) == 1:
+                Print.print_information("Restarting hosts...")
+                self.client.restart(cmds[0])
+            if len(cmds) == 2:
+                Print.print_information("Restarting host...")
+                self.client.restart(cmds[0], cmds[1])
         except Exception as e:
             handle_ex(e)
 
@@ -220,14 +230,19 @@ class Console(Cmd):
         Stop the virtual machines within a deployment.
         Usage:
             stop <deployment-name>  
+            stop <deployment-name> <vmname>
         """
         cmds = cmd.split()
-        if len(cmds) != 1:
+        if len(cmds) == 0 or len(cmds) > 2:
             Print.print_warning("Invalid number of arguments, see 'help stop'")
             return
         try:
-            Print.print_information("Stopping virtual machines...")
-            self.client.stop(cmds[0])
+            if len(cmds) == 1:
+                Print.print_information("Stopping hosts...")
+                self.client.stop(cmds[0])
+            if len(cmds) == 2:
+                Print.print_information("Stopping host...")
+                self.client.stop(cmds[0], cmds[1])
         except Exception as e:
             handle_ex(e)
 

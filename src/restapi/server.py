@@ -126,31 +126,31 @@ def build(template="default.yaml"):
         handle_ex(e)
         return ("Error", 500)
 
-@app.route('/start/<string:deployment_name>', methods=['PUT'])
+@app.route('/start/<string:deployment_name>/<string:vmname>', methods=['PUT'])
 @make_secure()
-def start(deployment_name):
+def start(deployment_name, vmname):
     try:
-        threading.Thread(target=Topology.start, args=(deployment_name, )).start()
+        threading.Thread(target=Topology.start, args=(deployment_name, vmname)).start()
         return ("Network start request accepted", 202)
     except Exception as e:
         handle_ex(e)
         return ("Error", 500)
 
-@app.route('/stop/<string:deployment_name>', methods=['PUT'])
+@app.route('/stop/<string:deployment_name>/<string:vmname>', methods=['PUT'])
 @make_secure()
-def stop(deployment_name):
+def stop(deployment_name, vmname):
     try:
-        threading.Thread(target=Topology.stop, args=(deployment_name, )).start()
+        threading.Thread(target=Topology.stop, args=(deployment_name, vmname)).start()
         return ("Network stop request accepted", 202)
     except Exception as e:
         handle_ex(e)
         return ("Error", 500)
 
-@app.route('/restart/<string:deployment_name>', methods=['PUT'])
+@app.route('/restart/<string:deployment_name>/<string:vmname>', methods=['PUT'])
 @make_secure()
-def restart(deployment_name):
+def restart(deployment_name, vmname):
     try:
-        threading.Thread(target=Topology.restart, args=(deployment_name, )).start()
+        threading.Thread(target=Topology.restart, args=(deployment_name, vmname)).start()
         return ("Network restart request accepted", 202)
     except Exception as e:
         handle_ex(e)

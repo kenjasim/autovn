@@ -33,7 +33,7 @@ class Topology():
         Constructor(template_file).parse()
     
     @staticmethod
-    def start(deployment_name):
+    def start(deployment_name, vmname='all'):
         """Start virtual network and machines."""
         # Get the hosts from the database
         hosts = Hosts().get_deployment_by_name(deployment_name)
@@ -44,8 +44,10 @@ class Topology():
 
             # Assign each host start command to a thread
             for host in hosts:
-                t = executor.submit(host.start)
-                threads.append(t)
+                # Filter for host
+                if host.get_vmname() == vmname or vmname == 'all':
+                    t = executor.submit(host.start)
+                    threads.append(t)
             # Wait for all threaded processes to complete
             for thread in threads:
                 thread.result()
@@ -78,7 +80,7 @@ class Topology():
             Print.print_error("No Deployment with name {name}".format(name=deployment_name))
 
     @staticmethod
-    def stop(deployment_name):
+    def stop(deployment_name, vmname='all'):
         """Shutdown virtual machines."""
         hosts = Hosts().get_deployment_by_name(deployment_name)
         if hosts:
@@ -87,8 +89,10 @@ class Topology():
             threads = []
             # Assign each host shutdown command to a thread
             for host in hosts:
-                t = executor.submit(host.stop)
-                threads.append(t)
+                # Filter for host
+                if host.get_vmname() == vmname or vmname == 'all':
+                    t = executor.submit(host.stop)
+                    threads.append(t)
             # Wait for all threaded processes to complete
             for thread in threads:
                 thread.result()
@@ -96,7 +100,7 @@ class Topology():
             Print.print_error("No Deployment with name {name}".format(name=deployment_name))
 
     @staticmethod
-    def restart(deployment_name):
+    def restart(deployment_name, vmname='all'):
         """Restart virtual machines."""
         hosts = Hosts().get_deployment_by_name(deployment_name)
         if hosts:
@@ -105,8 +109,10 @@ class Topology():
             threads = []
             # Assign each host restart command to a thread
             for host in hosts:
-                t = executor.submit(host.restart)
-                threads.append(t)
+                # Filter for host
+                if host.get_vmname() == vmname or vmname == 'all':
+                    t = executor.submit(host.restart)
+                    threads.append(t)
             # Wait for all threaded processes to complete
             for thread in threads:
                 thread.result()
