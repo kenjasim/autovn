@@ -50,7 +50,7 @@ $ git clone https://github.com/Aresium/autovn.git
 $ cd autovn 
 # Create virtual python environment
 $ python3 -m venv venv
-$ source /venv/bin/activate 
+$ source venv/bin/activate 
 $ pip3 install -r requirements.txt
 # Start application
 $ python3 /src/avn.py
