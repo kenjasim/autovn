@@ -14,7 +14,7 @@ class Token(Base):
 
     def __init__(self, user_id):
         self.token = token_urlsafe()
-        self.deadline = datetime.utcnow() + timedelta(minutes=1)
+        self.deadline = datetime.utcnow() + timedelta(minutes=12)
         self.user_id = user_id
 
     def write_to_db(self):

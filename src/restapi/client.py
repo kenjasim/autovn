@@ -86,28 +86,28 @@ class RESTClient(object):
             raise Exception("Failed to deploy topology: " + r.text)
     
     @staticmethod
-    def start(deployment_name): 
+    def start(deployment_name, vmname='all'): 
         """Request AVN Rest API to start virtual host machines."""
         headers = RESTClient.get_api_variables()
-        url = RESTClient.server_url + "start/" + deployment_name
+        url = RESTClient.server_url + "start/" + deployment_name + "/" + vmname
         r = requests.put(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 202:
             raise Exception("Failed to start topology: " + r.text)
 
     @staticmethod
-    def stop(deployment_name):
+    def stop(deployment_name, vmname='all'):
         """Request AVN Rest API to stop virtual host machines."""
         headers = RESTClient.get_api_variables()
-        url = RESTClient.server_url + "stop/" + deployment_name
+        url = RESTClient.server_url + "stop/" + deployment_name + "/" + vmname
         r = requests.put(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 202:
             raise Exception("Failed to stop topology: " + r.text)
     
     @staticmethod
-    def restart(deployment_name): 
+    def restart(deployment_name, vmname='all'): 
         """Request AVN Rest API to restart virtual host machines."""
         headers = RESTClient.get_api_variables()
-        url = RESTClient.server_url + "restart/" + deployment_name 
+        url = RESTClient.server_url + "restart/" + deployment_name  + "/" + vmname
         r = requests.put(url, headers=headers, verify=RESTClient.ssl_verify)
         if r.status_code != 202:
             raise Exception("Failed to start topology: " + r.text)
