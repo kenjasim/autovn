@@ -384,3 +384,23 @@ $ sudo nano /etc/netplan/00-installer-config.yaml
 ```bash
 $ sudo netplan apply
 ```
+
+### Greenlet dependancy fails to install via pip (Mac OS) 
+
+The native python3 attempts the install with build universal binaries, instead use brew's version of Python3. 
+
+1. Install brew
+```/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"```
+<https://brew.sh>
+2. Install Python3 
+```brew install python3``` 
+3. Restart the terminal
+4. Install pip 
+```bash
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py
+rm get-pip.py
+```
+<https://pip.pypa.io/en/stable/installing/>
+5. Install requirements 
+```pip3 install -r requirements.txt```
