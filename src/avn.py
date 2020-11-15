@@ -12,9 +12,9 @@ homedir = pathlib.Path().home()
 ################################################################################
 
 def parseargs():
-    p = argparse.ArgumentParser(description='Launch a custon virtual network')
+    p = argparse.ArgumentParser(description='Launch a custom virtual network')
     p.add_argument("-r", dest="restapi" ,action="store_true", help="Start avn's REST Api only")
-    p.add_argument("-c", metavar='<url/to/api>', nargs='?', dest="cliconsole", type=str, const="default", help="Start avn's Rest Client Console (no argument defaults")
+    p.add_argument("-c", metavar='<url/to/api>', nargs='?', dest="cliconsole", type=str, const="default", help="Start avn's Rest Client Console (no argument defaults)")
     return vars(p.parse_args())
 
 def config_folder():
