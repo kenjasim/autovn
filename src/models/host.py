@@ -51,7 +51,10 @@ class Host(Base):
         # Import image into VirtualBox
         self.import_image()
         # Write to database
-        self.write_to_db()
+        try:
+            self.write_to_db()
+        except Exception as e:
+            raise Exception("Faied to add host model to database: " + repr(e))
 
     @classmethod
     def check_exists(self, vmname):
@@ -72,8 +75,11 @@ class Host(Base):
         if not os.path.isfile(images_path):
             raise Exception("Virtual machine '.ova'. template not found")
         # Form path to image
-        cmd = 'VBoxManage import ' + "\"" + str(images_path) + "\"" + ' --vsys 0 --vmname ' + self.vmname
-        subprocess.getoutput(cmd)
+        try:
+            cmd = 'VBoxManage import ' + "\"" + str(images_path) + "\"" + ' --vsys 0 --vmname ' + self.vmname
+            subprocess.getoutput(cmd)
+        except Exception as e:
+            raise Exception("Failed to import image") 
 
         # Check vm successfully imported
         if not self.check_exists(self.vmname):
@@ -107,16 +113,33 @@ class Host(Base):
             nettype    (str): Network type ('bridged' or 'nat')
         """
         # Identify default host's default gateway interface 
-        iface = netifaces.gateways()['default'][netifaces.AF_INET][1]
+        iface = None
+        try:            
+            iface = netifaces.gateways()['default'][netifaces.AF_INET][1]
+        except Exception as e:
+            Print.print_warning("Failed to identify interface in 'default'")
+            try:
+                iface = netifaces.gateways()[netifaces.AF_INET][0][1]
+                Print.print_success("Interface identified")
+            except Exception as e:
+                raise Exception("failed to retrieve interface name" + repr(e)) 
         # Build command for assigning adapter to interface
         if nettype == 'nat':
-            cmd = 'vboxmanage modifyvm ' + self.vmname + ' --nic' + str(adapter) + ' ' + 'nat'
+            try:
+                cmd = 'vboxmanage modifyvm ' + self.vmname + ' --nic' + str(adapter) + ' ' + 'nat'
+                # Assign network interface 
+                subprocess.getoutput(cmd)
+            except Exception as e:
+                raise Exception("failed to assign nat adapter " + repr(e))
         elif nettype == 'bridged':
-            cmd = 'vboxmanage modifyvm ' + self.vmname + ' --nic' + str(adapter) + ' ' + nettype + " --bridgeadapter2 " + "'" + iface + "'"
+            try:
+                cmd = 'vboxmanage modifyvm ' + self.vmname + ' --nic' + str(adapter) + ' ' + nettype + " --bridgeadapter2 " + "'" + iface + "'"
+                # Assign network interface 
+                subprocess.getoutput(cmd)
+            except Exception as e:
+                raise Exception("failed to assign bridged adapter " + repr(e)) 
         else: 
             raise Exception("Invalid nettype, please choose between 'bridged' and 'nat'.")
-        # Assign network interface 
-        subprocess.getoutput(cmd)
 
     def properties(self):
         """
