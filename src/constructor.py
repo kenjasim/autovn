@@ -120,7 +120,10 @@ class Constructor():
                     if "internet_adapter" in values:
                         # Check a free adapter is avaliable 
                         if adapter <= 8:
-                            self.hosts[vmname].assign_internet(adapter, values["internet_adapter"])
+                            try:
+                                self.hosts[vmname].assign_internet(adapter, values["internet_adapter"])
+                            except Exception as e:
+                                raise Exception("failed to assign internet adapter: " + repr(e)) 
                         else:
                             raise Exception("Error adapter count for host exceeded")
         else:
